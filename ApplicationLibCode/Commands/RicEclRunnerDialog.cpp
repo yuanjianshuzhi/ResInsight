@@ -722,7 +722,23 @@ void RicEclRunnerDialog::slotStopSelected()
             if ( m_taskTable->item(r,2) ) m_taskTable->item(r,2)->setText("Cancelled");
         }
     }
-
+    for ( int r : queuedRows )
+    {
+        if ( r >= 0 && r < m_taskLogs.size() )
+        {
+            m_taskLogs[r].clear();
+            if ( r < m_logShownLen.size() ) m_logShownLen[r] = 0;
+        }
+    }
+    for ( int r : runningRows )
+    {
+        if ( r >= 0 && r < m_taskLogs.size() )
+        {
+            m_taskLogs[r].clear();
+            if ( r < m_logShownLen.size() ) m_logShownLen[r] = 0;
+        }
+    }
+    if ( m_logOutput ) m_logOutput->clear();
     // Terminate running processes without holding the mutex. Use QPointer to avoid touching deleted objects.
     for ( const QPointer<QProcess>& pp : procsToStop ) {
         if ( pp ) 
