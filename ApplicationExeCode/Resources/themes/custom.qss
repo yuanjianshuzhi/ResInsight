@@ -1,7 +1,7 @@
 $mainBackgroundColor: #E4F1FF; /* 主背景颜色 */
 $backgroundColor1: #C3DFFF; /* 背景颜色层 1 */
 $backgroundColor2: #C3DFFF; /* 背景颜色层 2 */
-$backgroundColor3: #E4F1FF; /* 背景颜色层 3 */
+$backgroundColor3: #0661D6; /* 背景颜色层 3 */
 $ScrollBarColor: #0068DF; /* 滚动条颜色 */
 $textColor: #000000; /* 主文本颜色 */
 $inputColor: #C3DFFF; /* 输入框背景颜色 */
@@ -204,7 +204,7 @@ QDateTimeEdit {
 /* 工具栏、工具按钮与菜单 */
 QToolBar {
     background-color: $mainBackgroundColor;
-    border: none;
+    border-bottom: 1px solid $borderColor;
 }
 
     QToolBar QToolButton {
@@ -538,9 +538,24 @@ ads--CDockContainerWidget {
         padding: 1 0 1 0;
     }
 
-ads--CDockContainer ads--CDockSplitter::handle {
-    background: $backgroundColor3;
-}
+    ads--CDockContainerWidget ads--CDockSplitter::handle {
+        background: $backgroundColor3;
+    }
+
+        /* 把手粗细：左右分割（水平状态）显示为竖条——用 width 控制 */
+        ads--CDockContainerWidget ads--CDockSplitter::handle:horizontal {
+            width: 1px; /* 根据需要改数值 */
+        }
+
+        /* 把手粗细：上下分割（垂直状态）显示为横条——用 height 控制 */
+        ads--CDockContainerWidget ads--CDockSplitter::handle:vertical {
+            height: 1px; /* 根据需要改数值 */
+        }
+
+        /* 可选：改变鼠标样式以提示可拖动 */
+        ads--CDockContainerWidget ads--CDockSplitter::handle:hover {
+            cursor: splitter;
+        }
 
 /* CDockAreaWidget */
 ads--CDockAreaWidget {
@@ -824,6 +839,7 @@ QScrollArea#dockWidgetScrollArea {
 
 QStatusBar {
     color: $textColor;
+    border-top: 1px solid $borderColor;
 }
 
 /* 在文件末尾单独放置 QPushButton 样式，确保不被覆盖 */
@@ -837,6 +853,11 @@ QPushButton {
 
     QPushButton:hover {
         background-color: $buttonHoverColor;
+    }
+
+    QPushButton:disabled {
+        background-color: #C3DFFF;
+        color: #999999;
     }
 
 /* 针对停靠窗口内的按钮设置最小尺寸，使其与 Delete/Open 等按钮高度一致 */
