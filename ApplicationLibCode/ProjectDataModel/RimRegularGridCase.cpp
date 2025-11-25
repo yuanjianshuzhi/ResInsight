@@ -32,7 +32,7 @@ CAF_PDM_SOURCE_INIT( RimRegularGridCase, "EclipseBoundingBoxCase" );
 //--------------------------------------------------------------------------------------------------
 RimRegularGridCase::RimRegularGridCase()
 {
-    CAF_PDM_InitObject( "Bounding Box Case", ":/Case48x48.png", "", "Bounding Box Case" );
+    CAF_PDM_InitObject( "Bounding Box Case", ":/Case48x48.svg", "", "Bounding Box Case" );
 
     CAF_PDM_InitFieldNoDefault( &m_minimum, "Minimum", "Minimum" );
     m_minimum.uiCapability()->setUiReadOnly( true );

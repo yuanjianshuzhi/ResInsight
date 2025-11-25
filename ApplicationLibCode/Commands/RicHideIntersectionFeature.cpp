@@ -77,5 +77,5 @@ void RicHideIntersectionFeature::onActionTriggered( bool isChecked )
 void RicHideIntersectionFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Hide Intersection" );
-    actionToSetup->setIcon( QIcon( ":/IntersectionXPlane16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/IntersectionXPlane16x16.svg" ) );
 }

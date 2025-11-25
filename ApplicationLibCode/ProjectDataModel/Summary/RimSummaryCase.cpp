@@ -295,7 +295,7 @@ void RimSummaryCase::defineObjectEditorAttribute( QString uiConfigName, caf::Pdm
         if ( !uiToolTip().isEmpty() )
         {
             auto tag  = caf::PdmUiTreeViewItemAttribute::createTag();
-            tag->icon = caf::IconProvider( ":/info.png" );
+            tag->icon = caf::IconProvider( ":/info.svg" );
 
             treeItemAttribute->tags.push_back( std::move( tag ) );
         }

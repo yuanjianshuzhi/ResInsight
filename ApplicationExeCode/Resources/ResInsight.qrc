@@ -333,6 +333,25 @@
         <file>themes/shared/comboBox-arrow.svg</file>
         <file>themes/shared/checkbox-checked.svg</file>
         <file>themes/shared/dark-collapsed.svg</file>
+        <file>Case48x48.svg</file>
+        <file>InfoBox16x16.svg</file>
+        <file>draw_style_meshlines_24x24.svg</file>
+        <file>MainGrid16x16.svg</file>
+        <file>CellResult.svg</file>
+        <file>EdgeResult_1.svg</file>
+        <file>CellFilter.svg</file>
+        <file>CellFilter_Values.svg</file>
+        <file>Erase_Streamline.svg</file>
+        <file>WellCF16x16.svg</file>
+        <file>CrossSections16x16.svg</file>
+        <file>ProcessMonitor.svg</file>
+        <file>info.svg</file>
+        <file>cell-selection.svg</file>
+        <file>IntersectionXPlane16x16.svg</file>
+        <file>WellAllocPlot16x16.svg</file>
+        <file>SummaryXPlotsLight16x16.svg</file>
+        <file>statistics.svg</file>
+        <file>MasterView16x16.svg</file>
     </qresource>
     <qresource prefix="/Shader">
         <file>fs_CellFace.glsl</file>

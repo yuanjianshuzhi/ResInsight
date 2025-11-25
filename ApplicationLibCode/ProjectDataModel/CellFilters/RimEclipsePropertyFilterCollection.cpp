@@ -39,7 +39,7 @@ CAF_PDM_SOURCE_INIT( RimEclipsePropertyFilterCollection, "CellPropertyFilters" )
 //--------------------------------------------------------------------------------------------------
 RimEclipsePropertyFilterCollection::RimEclipsePropertyFilterCollection()
 {
-    CAF_PDM_InitObject( "Property Filters", ":/CellFilter_Values.png" );
+    CAF_PDM_InitObject( "Property Filters", ":/CellFilter_Values.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_propertyFilters, "PropertyFilters", "Property Filters" );
 }

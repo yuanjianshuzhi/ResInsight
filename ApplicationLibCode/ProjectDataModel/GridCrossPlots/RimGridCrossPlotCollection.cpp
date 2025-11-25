@@ -27,7 +27,7 @@ CAF_PDM_SOURCE_INIT( RimGridCrossPlotCollection, "RimGridCrossPlotCollection" );
 //--------------------------------------------------------------------------------------------------
 RimGridCrossPlotCollection::RimGridCrossPlotCollection()
 {
-    CAF_PDM_InitObject( "Grid Cross Plots", ":/SummaryXPlotsLight16x16.png" );
+    CAF_PDM_InitObject( "Grid Cross Plots", ":/SummaryXPlotsLight16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_gridCrossPlots, "GridCrossPlots", "Grid Cross Plots" );
 }

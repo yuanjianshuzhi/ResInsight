@@ -126,7 +126,7 @@ void RicLinkViewFeature::setupActionLook( QAction* actionToSetup )
         }
         else
         {
-            actionToSetup->setIcon( QIcon( ":/MasterView16x16.png" ) );
+            actionToSetup->setIcon( QIcon( ":/MasterView16x16.svg" ) );
         }
     }
 }

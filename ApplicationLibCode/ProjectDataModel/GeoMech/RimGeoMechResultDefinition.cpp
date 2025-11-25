@@ -77,7 +77,7 @@ CAF_PDM_SOURCE_INIT( RimGeoMechResultDefinition, "GeoMechResultDefinition" );
 //--------------------------------------------------------------------------------------------------
 RimGeoMechResultDefinition::RimGeoMechResultDefinition()
 {
-    CAF_PDM_InitObject( "Color Result", ":/CellResult.png" );
+    CAF_PDM_InitObject( "Color Result", ":/CellResult.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_resultPositionType, "ResultPositionType", "Result Position" );
     m_resultPositionType.uiCapability()->setUiHidden( true );

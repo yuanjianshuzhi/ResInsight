@@ -192,5 +192,5 @@ void RicCreateSaturationPressurePlotsFeature::onActionTriggered( bool isChecked 
 void RicCreateSaturationPressurePlotsFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Saturation Pressure Plots" );
-    actionToSetup->setIcon( QIcon( ":/SummaryXPlotsLight16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/SummaryXPlotsLight16x16.svg" ) );
 }

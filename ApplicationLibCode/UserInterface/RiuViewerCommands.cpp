@@ -402,7 +402,7 @@ void RiuViewerCommands::displayContextMenu( QMouseEvent* event )
 
                 menuBuilder.addSeparator();
 
-                menuBuilder.subMenuStart( "Intersections", QIcon( ":/IntersectionXPlane16x16.png" ) );
+                menuBuilder.subMenuStart( "Intersections", QIcon( ":/IntersectionXPlane16x16.svg" ) );
 
                 menuBuilder << "RicNewPolylineIntersectionFeature";
                 menuBuilder << "RicNewAzimuthDipIntersectionFeature";

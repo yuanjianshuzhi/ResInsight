@@ -564,7 +564,7 @@ void RimBoxIntersection::updateVisibility()
     if ( m_singlePlaneState == PLANE_STATE_X )
     {
         m_maxXCoord.uiCapability()->setUiReadOnly( true );
-        setUiIconFromResourceString( QString( ":/IntersectionXPlane16x16.png" ) );
+        setUiIconFromResourceString( QString( ":/IntersectionXPlane16x16.svg" ) );
     }
     else if ( m_singlePlaneState == PLANE_STATE_Y )
     {

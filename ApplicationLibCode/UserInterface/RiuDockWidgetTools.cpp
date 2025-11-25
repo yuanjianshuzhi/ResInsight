@@ -373,9 +373,9 @@ QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
     else if ( dockWidgetName == mainWindowPropertyEditorName() )
         return QIcon( ":/property-editor.svg" );
     else if ( dockWidgetName == mainWindowResultInfoName() )
-        return QIcon( ":/info.png" );
+        return QIcon( ":/info.svg" );
     else if ( dockWidgetName == mainWindowProcessMonitorName() )
-        return QIcon( ":/view.svg" );
+        return QIcon( ":/ProcessMonitor.svg" );
     else if ( dockWidgetName == mainWindowResultPlotName() )
         return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == mainWindowDepthPlotName() )
@@ -406,6 +406,9 @@ QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
         return QIcon( ":/SummaryEnsemble.svg" );
     else if ( dockWidgetName == plotWindowQuickAccessName() || dockWidgetName == mainWindowQuickAccessName() )
         return QIcon( ":/pinned.svg" );
+    // new add Cell Selection Tool
+    else if ( dockWidgetName == mainWindowCellSelectionToolName() )
+        return QIcon( ":/cell-selection.svg" );
 
     return QIcon( ":/view.svg" );
 }

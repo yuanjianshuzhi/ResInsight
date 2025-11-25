@@ -55,7 +55,7 @@ void RicAppendSeparateIntersectionResultFeature::onActionTriggered( bool isCheck
 void RicAppendSeparateIntersectionResultFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "New Result Definition" );
-    actionToSetup->setIcon( QIcon( ":/CellResult.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellResult.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

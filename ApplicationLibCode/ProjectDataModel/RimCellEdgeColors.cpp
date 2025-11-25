@@ -60,7 +60,7 @@ CAF_PDM_SOURCE_INIT( RimCellEdgeColors, "CellEdgeResultSlot" );
 //--------------------------------------------------------------------------------------------------
 RimCellEdgeColors::RimCellEdgeColors()
 {
-    CAF_PDM_InitObject( "Cell Edge Result", ":/EdgeResult_1.png" );
+    CAF_PDM_InitObject( "Cell Edge Result", ":/EdgeResult_1.svg" );
 
     CAF_PDM_InitField( &m_enableCellEdgeColors, "EnableCellEdgeColors", true, "Enable Cell Edge Results" );
 
@@ -85,7 +85,7 @@ RimCellEdgeColors::RimCellEdgeColors()
 
     m_legendConfig = new RimRegularLegendConfig();
 
-    CAF_PDM_InitFieldNoDefault( &m_singleVarEdgeResultColors_OBSOLETE, "SingleVarEdgeResult", "Result Property", ":/CellResult.png" );
+    CAF_PDM_InitFieldNoDefault( &m_singleVarEdgeResultColors_OBSOLETE, "SingleVarEdgeResult", "Result Property", ":/CellResult.svg" );
     m_singleVarEdgeResultColors_OBSOLETE = new RimEclipseCellColors();
     m_singleVarEdgeResultColors_OBSOLETE.uiCapability()->setUiHidden( true );
 

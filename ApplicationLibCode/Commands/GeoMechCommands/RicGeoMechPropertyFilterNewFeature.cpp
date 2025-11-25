@@ -65,6 +65,6 @@ void RicGeoMechPropertyFilterNewFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicGeoMechPropertyFilterNewFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.svg" ) );
     actionToSetup->setText( "New Property Filter" );
 }

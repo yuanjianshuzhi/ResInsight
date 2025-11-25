@@ -58,6 +58,6 @@ void RicImportEclipseCaseTimeStepFilterFeature::onActionTriggered( bool isChecke
 //--------------------------------------------------------------------------------------------------
 void RicImportEclipseCaseTimeStepFilterFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/Case48x48.png" ) );
+    actionToSetup->setIcon( QIcon( ":/Case48x48.svg" ) );
     actionToSetup->setText( "Import Eclipse Case (Time Step Filtered)" );
 }

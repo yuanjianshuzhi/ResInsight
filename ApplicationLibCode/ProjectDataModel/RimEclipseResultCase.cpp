@@ -84,7 +84,7 @@ RimEclipseResultCase::RimEclipseResultCase()
     , m_useOpmRftReader( true )
     , m_rftDataIsReadFromFile( false )
 {
-    CAF_PDM_InitScriptableObject( "Eclipse Case", ":/Case48x48.png", "", "The Regular Eclipse Results Case" );
+    CAF_PDM_InitScriptableObject( "Eclipse Case", ":/Case48x48.svg", "", "The Regular Eclipse Results Case" );
 
     CAF_PDM_InitFieldNoDefault( &m_unitSystem, "UnitSystem", "Unit System" );
     m_unitSystem.registerGetMethod( RimProject::current(), &RimProject::commonUnitSystemForAllCases );

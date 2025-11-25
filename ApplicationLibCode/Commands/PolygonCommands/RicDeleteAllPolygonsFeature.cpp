@@ -42,5 +42,5 @@ void RicDeleteAllPolygonsFeature::onActionTriggered( bool isChecked )
 void RicDeleteAllPolygonsFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Delete All Polygons" );
-    actionToSetup->setIcon( QIcon( ":/Erase.png" ) );
+    actionToSetup->setIcon( QIcon( ":/Erase_Streamline.svg" ) );
 }

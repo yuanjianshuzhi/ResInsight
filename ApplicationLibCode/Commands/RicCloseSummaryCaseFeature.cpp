@@ -53,7 +53,7 @@ CAF_CMD_SOURCE_INIT( RicCloseSummaryCaseFeature, "RicCloseSummaryCaseFeature" );
 void RicCloseSummaryCaseFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Close Summary Case" );
-    actionToSetup->setIcon( QIcon( ":/Erase.png" ) );
+    actionToSetup->setIcon( QIcon( ":/Erase_Streamline.svg" ) );
     applyShortcutWithHintToAction( actionToSetup, QKeySequence::Delete );
 }
 

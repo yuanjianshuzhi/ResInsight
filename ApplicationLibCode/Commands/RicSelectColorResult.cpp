@@ -48,7 +48,7 @@ RimGridView* gridViewFrom2dIntersectionView( const Rim2dIntersectionView* int2dV
 void RicSelectColorResult::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Activate Result in Project Tree" );
-    actionToSetup->setIcon( QIcon( ":/CellResult.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellResult.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -103,6 +103,6 @@ void RicShowFlowCharacteristicsPlotFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicShowFlowCharacteristicsPlotFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/WellAllocPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/WellAllocPlot16x16.svg" ) );
     actionToSetup->setText( "Plot Flow Characteristics" );
 }
