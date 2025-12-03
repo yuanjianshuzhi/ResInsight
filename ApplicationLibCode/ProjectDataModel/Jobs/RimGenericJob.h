@@ -50,7 +50,9 @@ public:
     double            percentageDone() const;
     const QStringList jobLog() const;
 
-    virtual void decodeProgress( const QString& logLine ) = 0;
+    virtual bool matchesKeyValue( const QString& key, const QString& value ) const;
+
+    virtual void processLogOutput( const QString& logLine ) = 0;
 
 protected:
     void appendMenuItems( caf::CmdFeatureMenuBuilder& menuBuilder ) const override;
@@ -66,6 +68,8 @@ protected:
 
 protected:
     double m_percentageDone;
+    int    m_warningsDetected;
+    int    m_errorsDetected;
 
 private:
     bool                        m_lastRunFailed;

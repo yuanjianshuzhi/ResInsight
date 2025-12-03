@@ -175,7 +175,7 @@ void RigGridBase::initSubCellsMainGridCellIndex()
 
 //--------------------------------------------------------------------------------------------------
 /// For main grid, this will work with reservoirCellIndices retrieving the correct lgr cells as well.
-/// the cell() call retreives correct cell, because main grid has offset of 0, and we access the global
+/// the cell() call retrieves correct cell, because main grid has offset of 0, and we access the global
 /// cell array in main grid.
 //--------------------------------------------------------------------------------------------------
 std::array<cvf::Vec3d, 8> RigGridBase::cellCornerVertices( size_t cellIndex ) const
@@ -249,12 +249,12 @@ bool RigGridBase::ijkFromCellIndex( size_t cellIndex, size_t* i, size_t* j, size
 //--------------------------------------------------------------------------------------------------
 ///
 //--------------------------------------------------------------------------------------------------
-std::optional<caf::VecIjk> RigGridBase::ijkFromCellIndex( size_t cellIndex ) const
+std::optional<caf::VecIjk0> RigGridBase::ijkFromCellIndex( size_t cellIndex ) const
 {
     size_t i, j, k;
     if ( ijkFromCellIndex( cellIndex, &i, &j, &k ) )
     {
-        return caf::VecIjk( i, j, k );
+        return caf::VecIjk0( i, j, k );
     }
 
     return std::nullopt;
@@ -402,18 +402,13 @@ cvf::Vec3d RigGridBase::displayModelOffset() const
 }
 
 //--------------------------------------------------------------------------------------------------
-/// Returns the min size of the I and J charactristic cell sizes
+/// Returns the min size of the I and J characteristic cell sizes
 //--------------------------------------------------------------------------------------------------
 double RigGridBase::characteristicIJCellSize() const
 {
-    double characteristicCellSize = HUGE_VAL;
-
     cvf::Vec3d cellSize = characteristicCellSizes();
 
-    if ( cellSize.x() < characteristicCellSize ) return cellSize.x();
-    if ( cellSize.y() < characteristicCellSize ) return cellSize.y();
-
-    return characteristicCellSize;
+    return std::min( cellSize.x(), cellSize.y() );
 }
 
 //--------------------------------------------------------------------------------------------------

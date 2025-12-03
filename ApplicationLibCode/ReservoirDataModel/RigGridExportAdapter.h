@@ -18,16 +18,20 @@
 
 #pragma once
 
+#include "cafVecIjk.h"
+
 #include "cvfArray.h"
 #include "cvfMatrix4.h"
 #include "cvfStructGrid.h"
 #include "cvfVector3.h"
 
 #include <array>
+#include <expected>
 
 class RigEclipseCaseData;
 class RigMainGrid;
 class RigActiveCellInfo;
+class QString;
 
 //==================================================================================================
 //
@@ -83,6 +87,12 @@ public:
     cvf::Vec3st originalMax() const;
     cvf::Vec3st refinement() const;
     bool        hasRefinement() const;
+
+    // Coordinate transformation utilities
+    static std::expected<caf::VecIjk1, QString> transformIjkToSectorCoordinates( const caf::VecIjk0& originalIjk,
+                                                                                 const caf::VecIjk0& min,
+                                                                                 const caf::VecIjk0& max,
+                                                                                 const cvf::Vec3st&  refinement );
 
 private:
     // Internal methods to handle original vs refined cell access

@@ -40,10 +40,19 @@ struct RelPermCurve
         EPS_ON,
         EPS_OFF
     };
+    enum CurveSet
+    {
+        DRAINAGE,
+        IMBIBITION
+    };
+
+    bool isWaterCurve() const { return ( ident == KRW || ident == KROW || ident == PCOW ); }
+    bool isGasCurve() const { return ( ident == KRG || ident == KROG || ident == PCOG ); }
 
     Ident               ident;
     std::string         name;
     EpsMode             epsMode;
+    CurveSet            curveSet;
     std::vector<double> saturationVals;
     std::vector<double> yVals;
 };

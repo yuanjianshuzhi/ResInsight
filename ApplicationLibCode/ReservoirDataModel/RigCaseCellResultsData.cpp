@@ -1906,6 +1906,7 @@ void RigCaseCellResultsData::computeDepthRelatedResults()
 
         size_t resultIndex = activeCellInfo()->cellResultIndex( cellIdx );
         if ( resultIndex == cvf::UNDEFINED_SIZE_T ) continue;
+        if ( resultIndex >= actCellCount ) continue;
 
         bool isTemporaryGrid = cell.hostGrid()->isTempGrid();
 
@@ -1993,8 +1994,8 @@ void calculateConnectionGeometry( const RigCell&                     c1,
     c1.faceIndices( faceId, &face1 );
     c2.faceIndices( cvf::StructGridInterface::oppositeFace( faceId ), &face2 );
 
-    bool foundOverlap = cvf::GeometryTools::calculateOverlapPolygonOfTwoQuads( &polygon,
-                                                                               &intersections,
+    bool foundOverlap = cvf::GeometryTools::calculateOverlapPolygonOfTwoQuads( polygon,
+                                                                               intersections,
                                                                                (cvf::EdgeIntersectStorage<size_t>*)nullptr,
                                                                                cvf::wrapArrayConst( &nodes ),
                                                                                face1.data(),
@@ -3095,7 +3096,7 @@ void RigCaseCellResultsData::copyResultsMetaDataFromMainCase( RigEclipseCaseData
         RimEclipseResultCase* rimReservoir = dynamic_cast<RimEclipseResultCase*>( destinationCases[i] );
 
         if ( !rimReservoir ) continue; // Input reservoir
-        if ( mainCaseResultsData == rimReservoir->eclipseCaseData() ) continue; // Do not copy ontop of itself
+        if ( mainCaseResultsData == rimReservoir->eclipseCaseData() ) continue; // Do not copy on top of itself
 
         RigCaseCellResultsData* cellResultsStorage = rimReservoir->results( poroModel );
 

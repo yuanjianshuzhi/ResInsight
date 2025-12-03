@@ -84,6 +84,7 @@ QString faultDistanceName();
 QString facies();
 
 QString porv();
+QString rockv();
 QString soil();
 QString sgas();
 QString swat();
@@ -119,6 +120,9 @@ QString wbsPPInitialResult();
 QString           formationBinaryAllanResultName();
 QString           formationAllanResultName();
 std::set<QString> nncResultNames();
+
+QString satnumResult();
+QString imbnumResult();
 
 // List of well path derived results
 std::vector<QString> wbsAngleResultNames();

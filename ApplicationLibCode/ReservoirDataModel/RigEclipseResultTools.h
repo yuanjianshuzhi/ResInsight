@@ -21,6 +21,7 @@
 #include <QString>
 #include <vector>
 
+#include "cafVecIjk.h"
 #include "cvfArray.h"
 #include "cvfStructGrid.h"
 
@@ -38,7 +39,7 @@ enum BorderType : int
 
 struct BorderCellFace
 {
-    cvf::Vec3st                        ijk; // Cell indices (0-based)
+    caf::VecIjk0                       ijk; // Cell indices (0-based)
     cvf::StructGridInterface::FaceType faceType;
     int                                boundaryCondition; // BCCON grid value
 };
@@ -47,9 +48,13 @@ void createResultVector( RimEclipseCase& eclipseCase, const QString& resultName,
 
 void generateBorderResult( RimEclipseCase* eclipseCase, cvf::ref<cvf::UByteArray> customVisibility, const QString& resultName = "BORDER" );
 
-void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue = -1 );
+int generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue = -1 );
 
 int findMaxOperNumValue( RimEclipseCase* eclipseCase );
+
+int findMaxBcconValue( RimEclipseCase* eclipseCase );
+
+void generateBcconResult( RimEclipseCase* eclipseCase, const caf::VecIjk0& min, const caf::VecIjk0& max );
 
 std::vector<BorderCellFace> generateBorderCellFaces( RimEclipseCase* eclipseCase );
 

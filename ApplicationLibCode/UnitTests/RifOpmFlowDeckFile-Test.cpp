@@ -36,9 +36,9 @@ TEST( RifOpmFlowDeckFileTest, RegdimsExistingKeyword )
     // Test reading existing REGDIMS
     auto regdimsValues = deckFile.regdims();
     EXPECT_FALSE( regdimsValues.empty() ) << "REGDIMS should exist in NORNE file";
-    EXPECT_EQ( 4, regdimsValues.size() ) << "REGDIMS should have 4 values";
+    EXPECT_EQ( 7, regdimsValues.size() ) << "REGDIMS should have 7 values";
 
-    // Values from the NORNE file: 22 3 1* 20
+    // Values from the NORNE file: 22 3 1* 20 (rest are defaults)
     EXPECT_EQ( 22, regdimsValues[0] ) << "NTFIP should be 22";
     EXPECT_EQ( 3, regdimsValues[1] ) << "NMFIPR should be 3";
     // Third value is 1* (default), but OPM should handle this
@@ -68,10 +68,10 @@ TEST( RifOpmFlowDeckFileTest, RegdimsAddKeyword )
     // Verify REGDIMS now exists
     auto regdimsValues = deckFile.regdims();
     EXPECT_FALSE( regdimsValues.empty() ) << "REGDIMS should exist after adding";
-    EXPECT_EQ( 4, regdimsValues.size() ) << "REGDIMS should have 4 values";
+    EXPECT_EQ( 7, regdimsValues.size() ) << "REGDIMS should have 7 values";
 
-    // Verify default values (6* 1 /) - OPM should interpret 6* as default values followed by 1
-    EXPECT_EQ( 1, regdimsValues[3] ) << "NTFREG should be 1 (the explicit value)";
+    // Verify default values (6* 1 /) - items 1-6 are defaults, item 7 (MAX_OPERNUM) is 1
+    EXPECT_EQ( 1, regdimsValues[6] ) << "MAX_OPERNUM should be 1 (the explicit value)";
 
     // Test that calling ensureRegdimsKeyword again doesn't fail
     bool addAgainSuccess = deckFile.ensureRegdimsKeyword();
@@ -94,19 +94,22 @@ TEST( RifOpmFlowDeckFileTest, RegdimsSetValues )
     bool addSuccess = deckFile.ensureRegdimsKeyword();
     EXPECT_TRUE( addSuccess ) << "Should successfully add REGDIMS keyword";
 
-    // Set custom REGDIMS values
-    bool setSuccess = deckFile.setRegdims( 10, 5, 3, 8 );
+    // Set custom REGDIMS values (NTFIP NMFIPR NRFREG NTFREG MAX_ETRACK NTCREG MAX_OPERNUM)
+    bool setSuccess = deckFile.setRegdims( 10, 5, 3, 8, 0, 2, 4 );
     EXPECT_TRUE( setSuccess ) << "Should successfully set REGDIMS values";
 
     // Verify the values were set correctly
     auto regdimsValues = deckFile.regdims();
     EXPECT_FALSE( regdimsValues.empty() ) << "REGDIMS should exist";
-    EXPECT_EQ( 4, regdimsValues.size() ) << "REGDIMS should have 4 values";
+    EXPECT_EQ( 7, regdimsValues.size() ) << "REGDIMS should have 7 values";
 
     EXPECT_EQ( 10, regdimsValues[0] ) << "NTFIP should be 10";
     EXPECT_EQ( 5, regdimsValues[1] ) << "NMFIPR should be 5";
     EXPECT_EQ( 3, regdimsValues[2] ) << "NRFREG should be 3";
     EXPECT_EQ( 8, regdimsValues[3] ) << "NTFREG should be 8";
+    EXPECT_EQ( 0, regdimsValues[4] ) << "MAX_ETRACK should be 0";
+    EXPECT_EQ( 2, regdimsValues[5] ) << "NTCREG should be 2";
+    EXPECT_EQ( 4, regdimsValues[6] ) << "MAX_OPERNUM should be 4";
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -141,7 +144,7 @@ TEST( RifOpmFlowDeckFileTest, RegdimsSaveAndReload )
     // Verify REGDIMS exists in reloaded deck
     auto reloadedRegdimsValues = reloadedDeckFile.regdims();
     EXPECT_FALSE( reloadedRegdimsValues.empty() ) << "REGDIMS should exist in reloaded deck";
-    EXPECT_EQ( 4, reloadedRegdimsValues.size() ) << "REGDIMS should have 4 values in reloaded deck";
+    EXPECT_EQ( 7, reloadedRegdimsValues.size() ) << "REGDIMS should have 7 values in reloaded deck";
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -270,9 +273,9 @@ TEST( RifOpmFlowDeckFileTest, AddOperaterKeyword )
     bool               loadSuccess = deckFile.loadDeck( fileName.toStdString() );
     ASSERT_TRUE( loadSuccess ) << "Failed to load test deck file";
 
-    // Add OPERATER statement to GRID section: PORV 9 MULTX PORV 1.0e6 1* 1*
-    bool addSuccess = deckFile.replaceKeyword( "GRID", RimKeywordFactory::operaterKeyword( "PORV", 9, "MULTX", "PORV", 1.0e6f, std::nullopt ) );
-    EXPECT_TRUE( addSuccess ) << "Should successfully add OPERATER statement in GRID section";
+    // Add OPERATER statement to EDIT section: PORV 9 MULTX PORV 1.0e6 1* 1*
+    bool addSuccess = deckFile.replaceKeyword( "EDIT", RimKeywordFactory::operaterKeyword( "PORV", 9, "MULTX", "PORV", 1.0e6f, std::nullopt ) );
+    EXPECT_TRUE( addSuccess ) << "Should successfully add OPERATER statement in EDIT section";
 
     // Test adding to non-existent section
     bool addFailure = deckFile.replaceKeyword( "NONEXISTENT",
@@ -307,9 +310,9 @@ TEST( RifOpmFlowDeckFileTest, AddOperaterSaveAndReload )
     bool               loadSuccess = deckFile.loadDeck( fileName.toStdString() );
     ASSERT_TRUE( loadSuccess ) << "Failed to load test deck file";
 
-    // Add OPERATER statement: PORV 9 MULTX PORV 1.0e6 1* 1*
-    bool addSuccess = deckFile.replaceKeyword( "GRID", RimKeywordFactory::operaterKeyword( "PORV", 9, "MULTX", "PORV", 1.0e6f, std::nullopt ) );
-    EXPECT_TRUE( addSuccess ) << "Should successfully add OPERATER statement";
+    // Add OPERATER statement to EDIT section: PORV 9 MULTX PORV 1.0e6 1* 1*
+    bool addSuccess = deckFile.replaceKeyword( "EDIT", RimKeywordFactory::operaterKeyword( "PORV", 9, "MULTX", "PORV", 1.0e6f, std::nullopt ) );
+    EXPECT_TRUE( addSuccess ) << "Should successfully add OPERATER statement to EDIT section";
 
     // Save the deck to a temporary location
     QTemporaryDir tempDir;
@@ -324,10 +327,23 @@ TEST( RifOpmFlowDeckFileTest, AddOperaterSaveAndReload )
     ASSERT_TRUE( savedFile.open( QIODevice::ReadOnly | QIODevice::Text ) );
 
     QString content = savedFile.readAll();
+
     EXPECT_TRUE( content.contains( "OPERATER" ) ) << "Saved file should contain OPERATER keyword";
     EXPECT_TRUE( content.contains( "PORV" ) ) << "Saved file should contain PORV";
     EXPECT_TRUE( content.contains( "MULTX" ) ) << "Saved file should contain MULTX equation";
     EXPECT_TRUE( content.contains( "1e+06" ) || content.contains( "1000000" ) ) << "Saved file should contain the alpha value 1.0e6";
+
+    // Verify OPERATER is in the EDIT section (between EDIT and PROPS keywords)
+    int editPos     = content.indexOf( "EDIT" );
+    int propsPos    = content.indexOf( "PROPS" );
+    int operaterPos = content.indexOf( "OPERATER" );
+
+    EXPECT_NE( editPos, -1 ) << "File should contain EDIT section";
+    EXPECT_NE( propsPos, -1 ) << "File should contain PROPS section";
+    EXPECT_NE( operaterPos, -1 ) << "File should contain OPERATER keyword";
+
+    EXPECT_GT( operaterPos, editPos ) << "OPERATER should be after EDIT keyword";
+    EXPECT_LT( operaterPos, propsPos ) << "OPERATER should be before PROPS keyword (i.e., in EDIT section)";
 
     savedFile.close();
 
@@ -356,10 +372,10 @@ TEST( RifOpmFlowDeckFileTest, BcpropKeyword )
 
     // Create boundary conditions with different indices
     std::vector<RigEclipseResultTools::BorderCellFace> boundaryConditions;
-    boundaryConditions.push_back( { cvf::Vec3st( 5, 5, 2 ), cvf::StructGridInterface::POS_I, 1 } );
-    boundaryConditions.push_back( { cvf::Vec3st( 5, 6, 2 ), cvf::StructGridInterface::POS_J, 1 } );
-    boundaryConditions.push_back( { cvf::Vec3st( 6, 5, 2 ), cvf::StructGridInterface::NEG_I, 2 } );
-    boundaryConditions.push_back( { cvf::Vec3st( 7, 5, 2 ), cvf::StructGridInterface::POS_K, 2 } );
+    boundaryConditions.push_back( { caf::VecIjk0( 5, 5, 2 ), cvf::StructGridInterface::POS_I, 1 } );
+    boundaryConditions.push_back( { caf::VecIjk0( 5, 6, 2 ), cvf::StructGridInterface::POS_J, 1 } );
+    boundaryConditions.push_back( { caf::VecIjk0( 6, 5, 2 ), cvf::StructGridInterface::NEG_I, 2 } );
+    boundaryConditions.push_back( { caf::VecIjk0( 7, 5, 2 ), cvf::StructGridInterface::POS_K, 2 } );
 
     // Create boundary condition properties
     // BC 1: Free flow boundary with specified pressure

@@ -25,6 +25,7 @@
 #include "RifEclipseInputFileTools.h"
 #include "RifOpmDeckTools.h"
 
+#include "CompletionsMsw/RigMswTableData.h"
 #include "RigEclipseResultTools.h"
 #include "RigFault.h"
 #include "RigMainGrid.h"
@@ -35,15 +36,17 @@
 
 #include "cvfStructGrid.h"
 
+#include "opm/input/eclipse/Deck/Deck.hpp"
 #include "opm/input/eclipse/Deck/DeckItem.hpp"
 #include "opm/input/eclipse/Deck/DeckKeyword.hpp"
 #include "opm/input/eclipse/Deck/DeckRecord.hpp"
-#include "opm/input/eclipse/Parser/ParserKeyword.hpp"
 #include "opm/input/eclipse/Parser/ParserKeywords/B.hpp"
 #include "opm/input/eclipse/Parser/ParserKeywords/C.hpp"
 #include "opm/input/eclipse/Parser/ParserKeywords/F.hpp"
 #include "opm/input/eclipse/Parser/ParserKeywords/O.hpp"
 #include "opm/input/eclipse/Parser/ParserKeywords/W.hpp"
+
+#include <algorithm>
 
 //==================================================================================================
 ///
@@ -57,7 +60,7 @@ namespace RimKeywordFactory
 //--------------------------------------------------------------------------------------------------
 Opm::DeckKeyword welspecsKeyword( const std::string wellGrpName, RimEclipseCase* eCase, RimWellPath* wellPath )
 {
-    if ( eCase == nullptr || wellPath == nullptr || wellPath->completionSettings() == nullptr )
+    if ( eCase == nullptr || wellPath == nullptr || wellPath->completionSettings() == nullptr || eCase->eclipseCaseData() == nullptr )
     {
         return Opm::DeckKeyword();
     }
@@ -75,17 +78,9 @@ Opm::DeckKeyword welspecsKeyword( const std::string wellGrpName, RimEclipseCase*
     items.push_back( RifOpmDeckTools::item( W::GROUP::itemName, wellGrpName ) );
     items.push_back( RifOpmDeckTools::item( W::HEAD_I::itemName, ijPos.second.x() + 1 ) );
     items.push_back( RifOpmDeckTools::item( W::HEAD_J::itemName, ijPos.second.y() + 1 ) );
-
-    auto refDepth = compSettings->referenceDepth();
-    items.push_back( refDepth.has_value() ? RifOpmDeckTools::item( W::REF_DEPTH::itemName, refDepth.value() )
-                                          : RifOpmDeckTools::defaultItem( W::REF_DEPTH::itemName ) );
-
+    items.push_back( RifOpmDeckTools::optionalItem( W::REF_DEPTH::itemName, compSettings->referenceDepth() ) );
     items.push_back( RifOpmDeckTools::item( W::PHASE::itemName, compSettings->wellTypeNameForExport().toStdString() ) );
-
-    auto dRadius = compSettings->drainageRadius();
-    items.push_back( dRadius.has_value() ? RifOpmDeckTools::item( W::D_RADIUS::itemName, dRadius.value() )
-                                         : RifOpmDeckTools::defaultItem( W::D_RADIUS::itemName ) );
-
+    items.push_back( RifOpmDeckTools::optionalItem( W::D_RADIUS::itemName, compSettings->drainageRadius() ) );
     items.push_back( RifOpmDeckTools::item( W::INFLOW_EQ::itemName, compSettings->gasInflowEquationForExport().toStdString() ) );
     items.push_back( RifOpmDeckTools::item( W::AUTO_SHUTIN::itemName, compSettings->automaticWellShutInForExport().toStdString() ) );
     items.push_back( RifOpmDeckTools::item( W::CROSSFLOW::itemName, compSettings->allowWellCrossFlowForExport().toStdString() ) );
@@ -104,7 +99,7 @@ Opm::DeckKeyword welspecsKeyword( const std::string wellGrpName, RimEclipseCase*
 //--------------------------------------------------------------------------------------------------
 Opm::DeckKeyword compdatKeyword( RimEclipseCase* eCase, RimWellPath* wellPath )
 {
-    if ( eCase == nullptr || wellPath == nullptr || wellPath->completionSettings() == nullptr )
+    if ( eCase == nullptr || wellPath == nullptr || wellPath->completionSettings() == nullptr || eCase->eclipseCaseData() == nullptr )
     {
         return Opm::DeckKeyword();
     }
@@ -156,6 +151,171 @@ Opm::DeckKeyword compdatKeyword( RimEclipseCase* eCase, RimWellPath* wellPath )
     }
 
     return kw;
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+Opm::DeckKeyword welsegsKeyword( const RigMswTableData& mswData, int& maxSegments, int& maxBranches )
+{
+    maxSegments = 0;
+    maxBranches = 0;
+
+    if ( !mswData.hasWelsegsData() ) return Opm::DeckKeyword();
+
+    using W = Opm::ParserKeywords::WELSEGS;
+
+    Opm::DeckKeyword newKw( ( W() ) );
+
+    // welsegs header row
+    auto&                      header = mswData.welsegsHeader();
+    std::vector<Opm::DeckItem> headerItems;
+    headerItems.push_back( RifOpmDeckTools::item( W::WELL::itemName, header.well ) );
+    headerItems.push_back( RifOpmDeckTools::item( W::TOP_DEPTH::itemName, header.topDepth ) );
+    headerItems.push_back( RifOpmDeckTools::item( W::TOP_LENGTH::itemName, header.topLength ) );
+    headerItems.push_back( RifOpmDeckTools::optionalItem( W::WELLBORE_VOLUME::itemName, header.wellboreVolume ) );
+    headerItems.push_back( RifOpmDeckTools::item( W::INFO_TYPE::itemName, header.infoType ) );
+    headerItems.push_back( RifOpmDeckTools::optionalItem( W::PRESSURE_COMPONENTS::itemName, header.pressureComponents ) );
+    headerItems.push_back( RifOpmDeckTools::optionalItem( W::FLOW_MODEL::itemName, header.flowModel ) );
+
+    newKw.addRecord( Opm::DeckRecord{ std::move( headerItems ) } );
+
+    // welsegs data rows
+    for ( auto& wsRow : mswData.welsegsData() )
+    {
+        maxSegments = std::max( maxSegments, wsRow.segment1 );
+        maxSegments = std::max( maxSegments, wsRow.segment2 );
+        maxBranches = std::max( maxBranches, wsRow.branch );
+
+        std::vector<Opm::DeckItem> items;
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::SEGMENT1::itemName, wsRow.segment1 ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::SEGMENT2::itemName, wsRow.segment2 ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::BRANCH::itemName, wsRow.branch ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::JOIN_SEGMENT::itemName, wsRow.joinSegment ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::LENGTH::itemName, wsRow.length ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::WELSEGS::DEPTH::itemName, wsRow.depth ) );
+        items.push_back( RifOpmDeckTools::optionalItem( Opm::ParserKeywords::WELSEGS::DIAMETER::itemName, wsRow.diameter ) );
+        items.push_back( RifOpmDeckTools::optionalItem( Opm::ParserKeywords::WELSEGS::ROUGHNESS::itemName, wsRow.roughness ) );
+
+        newKw.addRecord( Opm::DeckRecord{ std::move( items ) } );
+    }
+
+    return newKw;
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+Opm::DeckKeyword compsegsKeyword( const RigMswTableData& mswData )
+{
+    if ( !mswData.hasCompsegsData() )
+    {
+        return Opm::DeckKeyword();
+    }
+
+    Opm::DeckKeyword newKw( ( Opm::ParserKeywords::COMPSEGS() ) );
+
+    // header row
+    std::vector<Opm::DeckItem> headerItems;
+    headerItems.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::WELL::itemName, mswData.wellName() ) );
+    newKw.addRecord( Opm::DeckRecord{ std::move( headerItems ) } );
+
+    // data rows
+    for ( auto& csRow : mswData.compsegsData() )
+    {
+        std::vector<Opm::DeckItem> items;
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::I::itemName, csRow.i ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::J::itemName, csRow.j ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::K::itemName, csRow.k ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::BRANCH::itemName, csRow.branch ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::DISTANCE_START::itemName, csRow.distanceStart ) );
+        items.push_back( RifOpmDeckTools::item( Opm::ParserKeywords::COMPSEGS::DISTANCE_END::itemName, csRow.distanceEnd ) );
+
+        newKw.addRecord( Opm::DeckRecord{ std::move( items ) } );
+    }
+
+    return newKw;
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+Opm::DeckKeyword wsegvalvKeyword( const RigMswTableData& mswData )
+{
+    if ( !mswData.hasWsegvalvData() )
+    {
+        return Opm::DeckKeyword();
+    }
+
+    using W = Opm::ParserKeywords::WSEGVALV;
+
+    Opm::DeckKeyword newKw( ( W() ) );
+
+    for ( auto& wvRow : mswData.wsegvalvData() )
+    {
+        std::vector<Opm::DeckItem> items;
+
+        items.push_back( RifOpmDeckTools::item( W::WELL::itemName, wvRow.well ) );
+        items.push_back( RifOpmDeckTools::item( W::SEGMENT_NUMBER::itemName, wvRow.segmentNumber ) );
+        items.push_back( RifOpmDeckTools::item( W::CV::itemName, wvRow.cv ) );
+        items.push_back( RifOpmDeckTools::item( W::AREA::itemName, wvRow.area ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::EXTRA_LENGTH::itemName, wvRow.extraLength ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::PIPE_D::itemName, wvRow.pipeD ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::ROUGHNESS::itemName, wvRow.roughness ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::PIPE_A::itemName, wvRow.pipeA ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::STATUS::itemName, wvRow.status ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::MAX_A::itemName, wvRow.maxA ) );
+
+        newKw.addRecord( Opm::DeckRecord{ std::move( items ) } );
+    }
+
+    return newKw;
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+Opm::DeckKeyword wsegaicdKeyword( const RigMswTableData& mswData )
+{
+    if ( !mswData.hasWsegaicdData() )
+    {
+        return Opm::DeckKeyword();
+    }
+
+    using W = Opm::ParserKeywords::WSEGAICD;
+
+    Opm::DeckKeyword newKw( ( W() ) );
+
+    for ( auto& waRow : mswData.wsegaicdData() )
+    {
+        std::vector<Opm::DeckItem> items;
+
+        items.push_back( RifOpmDeckTools::item( W::WELL::itemName, waRow.well ) );
+        items.push_back( RifOpmDeckTools::item( W::SEGMENT1::itemName, waRow.segment1 ) );
+        items.push_back( RifOpmDeckTools::item( W::SEGMENT2::itemName, waRow.segment2 ) );
+        items.push_back( RifOpmDeckTools::item( W::STRENGTH::itemName, waRow.strength ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::LENGTH::itemName, waRow.length ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::DENSITY_CALI::itemName, waRow.densityCali ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::VISCOSITY_CALI::itemName, waRow.viscosityCali ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::CRITICAL_VALUE::itemName, waRow.criticalValue ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::WIDTH_TRANS::itemName, waRow.widthTrans ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::MAX_VISC_RATIO::itemName, waRow.maxViscRatio ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::METHOD_SCALING_FACTOR::itemName, waRow.methodScalingFactor ) );
+        items.push_back( RifOpmDeckTools::item( W::MAX_ABS_RATE::itemName, waRow.maxAbsRate ) );
+        items.push_back( RifOpmDeckTools::item( W::FLOW_RATE_EXPONENT::itemName, waRow.flowRateExponent ) );
+        items.push_back( RifOpmDeckTools::item( W::VISC_EXPONENT::itemName, waRow.viscExponent ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::STATUS::itemName, waRow.status ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::OIL_FLOW_FRACTION::itemName, waRow.oilFlowFraction ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::WATER_FLOW_FRACTION::itemName, waRow.waterFlowFraction ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::GAS_FLOW_FRACTION::itemName, waRow.gasFlowFraction ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::OIL_VISC_FRACTION::itemName, waRow.oilViscFraction ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::WATER_VISC_FRACTION::itemName, waRow.waterViscFraction ) );
+        items.push_back( RifOpmDeckTools::optionalItem( W::GAS_VISC_FRACTION::itemName, waRow.gasViscFraction ) );
+
+        newKw.addRecord( Opm::DeckRecord{ std::move( items ) } );
+    }
+
+    return newKw;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -328,6 +488,7 @@ Opm::DeckKeyword bcconKeyword( const std::vector<RigEclipseResultTools::BorderCe
 
     Opm::DeckKeyword kw{ Opm::ParserKeywords::BCCON() };
 
+    int bcconIndex = 1;
     for ( const auto& borderFace : borderCellFaces )
     {
         // Convert from 0-based to 1-based Eclipse indexing
@@ -340,7 +501,7 @@ Opm::DeckKeyword bcconKeyword( const std::vector<RigEclipseResultTools::BorderCe
         // Create items for the record
         std::vector<Opm::DeckItem> items;
 
-        items.push_back( RifOpmDeckTools::item( B::INDEX::itemName, borderFace.boundaryCondition ) );
+        items.push_back( RifOpmDeckTools::item( B::INDEX::itemName, bcconIndex ) );
         items.push_back( RifOpmDeckTools::item( B::I1::itemName, i1 ) );
         items.push_back( RifOpmDeckTools::item( B::I2::itemName, i1 ) );
         items.push_back( RifOpmDeckTools::item( B::J1::itemName, j1 ) );
@@ -350,6 +511,7 @@ Opm::DeckKeyword bcconKeyword( const std::vector<RigEclipseResultTools::BorderCe
         items.push_back( RifOpmDeckTools::item( B::DIRECTION::itemName, faceStr ) );
 
         kw.addRecord( Opm::DeckRecord{ std::move( items ) } );
+        bcconIndex++;
     }
 
     return kw;
@@ -370,15 +532,14 @@ Opm::DeckKeyword bcpropKeyword( const std::vector<RigEclipseResultTools::BorderC
 
     Opm::DeckKeyword kw{ Opm::ParserKeywords::BCPROP() };
 
+    int bcIndex = 1;
     // Add one entry per boundary condition
     for ( const auto& bc : boundaryConditions )
     {
-        if ( bc.boundaryCondition <= 0 ) continue; // Skip entries without a valid boundary condition
-
         // Find the corresponding property record
         // The properties vector should be indexed by boundaryCondition - 1
-        size_t propIndex = static_cast<size_t>( bc.boundaryCondition - 1 );
-        if ( propIndex < boundaryConditionProperties.size() )
+        int propIndex = bc.boundaryCondition - 1;
+        if ( propIndex >= 0 && propIndex < static_cast<int>( boundaryConditionProperties.size() ) )
         {
             const auto& propRecord = boundaryConditionProperties[propIndex];
 
@@ -386,16 +547,20 @@ Opm::DeckKeyword bcpropKeyword( const std::vector<RigEclipseResultTools::BorderC
             std::vector<Opm::DeckItem> items;
 
             // Add INDEX field
-            items.push_back( RifOpmDeckTools::item( B::INDEX::itemName, bc.boundaryCondition ) );
+            items.push_back( RifOpmDeckTools::item( B::INDEX::itemName, bcIndex ) );
 
             // Copy all items from the property record (which doesn't include INDEX)
             for ( size_t i = 0; i < propRecord.size(); ++i )
             {
-                items.push_back( propRecord.getItem( i ) );
+                if ( propRecord.getItem( i ).name() != B::INDEX::itemName )
+                {
+                    items.push_back( propRecord.getItem( i ) );
+                }
             }
 
             kw.addRecord( Opm::DeckRecord{ std::move( items ) } );
         }
+        bcIndex++;
     }
 
     return kw;
@@ -421,26 +586,8 @@ Opm::DeckKeyword operaterKeyword( std::string          targetProperty,
     recordItems.push_back( RifOpmDeckTools::item( O::REGION_NUMBER::itemName, regionId ) );
     recordItems.push_back( RifOpmDeckTools::item( O::OPERATION::itemName, equation ) );
     recordItems.push_back( RifOpmDeckTools::item( O::ARRAY_PARAMETER::itemName, inputProperty ) );
-
-    // Add alpha parameter
-    if ( alpha.has_value() )
-    {
-        recordItems.push_back( RifOpmDeckTools::item( O::PARAM1::itemName, std::to_string( alpha.value() ) ) );
-    }
-    else
-    {
-        recordItems.push_back( RifOpmDeckTools::defaultItem( O::PARAM1::itemName ) );
-    }
-
-    // Add beta parameter
-    if ( beta.has_value() )
-    {
-        recordItems.push_back( RifOpmDeckTools::item( O::PARAM2::itemName, std::to_string( beta.value() ) ) );
-    }
-    else
-    {
-        recordItems.push_back( RifOpmDeckTools::defaultItem( O::PARAM2::itemName ) );
-    }
+    recordItems.push_back( RifOpmDeckTools::optionalItem( O::PARAM1::itemName, alpha ) );
+    recordItems.push_back( RifOpmDeckTools::optionalItem( O::PARAM2::itemName, beta ) );
 
     // Add final default item
     recordItems.push_back( RifOpmDeckTools::defaultItem( O::REGION_NAME::itemName ) ); // 1* for the last field

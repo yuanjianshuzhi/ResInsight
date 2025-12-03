@@ -58,10 +58,10 @@ void RifEnsembleImportConfig::computePatternsFromSummaryFilePaths( const QString
 {
     std::vector<QString> warnings;
 
-    auto restartFileNames1 = RifEclipseSummaryTools::getRestartFileNamesOpm( filePath1, warnings );
+    auto restartFileNames1 = RifEclipseSummaryTools::getRestartFileNames( filePath1, warnings );
     auto paramFilePath1    = RifCaseRealizationParametersFileLocator::locate( filePath1 );
 
-    auto restartFileNames2 = RifEclipseSummaryTools::getRestartFileNamesOpm( filePath2, warnings );
+    auto restartFileNames2 = RifEclipseSummaryTools::getRestartFileNames( filePath2, warnings );
     auto paramFilePath2    = RifCaseRealizationParametersFileLocator::locate( filePath2 );
 
     computeRestartPatternsFromTwoRealizations( restartFileNames1, restartFileNames2 );
@@ -78,7 +78,7 @@ void RifEnsembleImportConfig::computeRestartPatternsFromTwoRealizations( const s
 {
     m_restartFileNamePatterns.clear();
 
-    if ( restartFilesFirstCase.empty() ) return;
+    if ( restartFilesFirstCase.empty() || restartFilesSecondCase.empty() ) return;
 
     if ( restartFilesFirstCase.size() != restartFilesSecondCase.size() )
     {

@@ -19,6 +19,7 @@
 #include "RigEclipseResultTools.h"
 
 #include "RiaDefines.h"
+#include "RiaLogging.h"
 #include "RiaPorosityModel.h"
 
 #include "RiaResultNames.h"
@@ -33,8 +34,54 @@
 #include "RimEclipseResultCase.h"
 #include "RimEclipseView.h"
 
+#include "cafVecIjk.h"
+
 namespace RigEclipseResultTools
 {
+namespace
+{
+    //--------------------------------------------------------------------------------------------------
+    /// Helper function to find maximum value in a result
+    //--------------------------------------------------------------------------------------------------
+    int findMaxResultValue( RimEclipseCase* eclipseCase, const QString& resultName, const std::vector<RiaDefines::ResultCatType>& categories )
+    {
+        if ( eclipseCase == nullptr ) return 0;
+
+        auto resultsData = eclipseCase->results( RiaDefines::PorosityModelType::MATRIX_MODEL );
+        if ( !resultsData ) return 0;
+
+        // Try to find result in the provided categories
+        RigEclipseResultAddress resultAddr;
+        bool                    hasResult = false;
+
+        for ( const auto& category : categories )
+        {
+            RigEclipseResultAddress addr( category, RiaDefines::ResultDataType::INTEGER, resultName );
+            if ( resultsData->hasResultEntry( addr ) )
+            {
+                resultAddr = addr;
+                hasResult  = true;
+                break;
+            }
+        }
+
+        if ( !hasResult ) return 0;
+
+        resultsData->ensureKnownResultLoaded( resultAddr );
+        auto resultValues = resultsData->cellScalarResults( resultAddr, 0 );
+        if ( resultValues.empty() ) return 0;
+
+        // Find maximum value
+        int maxValue = 0;
+        for ( double value : resultValues )
+        {
+            maxValue = std::max( maxValue, static_cast<int>( value ) );
+        }
+
+        return maxValue;
+    }
+} // namespace
+
 //--------------------------------------------------------------------------------------------------
 ///
 //--------------------------------------------------------------------------------------------------
@@ -108,14 +155,15 @@ void generateBorderResult( RimEclipseCase* eclipseCase, cvf::ref<cvf::UByteArray
 //--------------------------------------------------------------------------------------------------
 ///
 //--------------------------------------------------------------------------------------------------
-void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
+int generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
 {
-    if ( eclipseCase == nullptr ) return;
+    if ( eclipseCase == nullptr ) return 0;
 
     // Auto-determine border cell value if not specified
     if ( borderCellValue == -1 )
     {
-        int maxOperNum  = findMaxOperNumValue( eclipseCase );
+        int maxOperNum = findMaxOperNumValue( eclipseCase );
+        RiaLogging::info( QString( "Found max OPERNUM: %1" ).arg( maxOperNum ) );
         borderCellValue = maxOperNum + 1;
     }
 
@@ -158,6 +206,10 @@ void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
             result[i] = static_cast<int>( existingValues[i] );
         }
     }
+    else
+    {
+        borderCellValue = 2;
+    }
 
     // Check if BORDNUM exists to modify border cells
     RigEclipseResultAddress bordNumAddr( RiaDefines::ResultCatType::GENERATED, RiaDefines::ResultDataType::INTEGER, RiaResultNames::bordnum() );
@@ -167,7 +219,8 @@ void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
         auto bordNumValues = resultsData->cellScalarResults( bordNumAddr, 0 );
         if ( !bordNumValues.empty() )
         {
-            if ( result.empty() ) result.resize( bordNumValues.size(), 0 );
+            result.resize( bordNumValues.size(), 1 );
+
             for ( auto activeCellIdx : activeReservoirCellIdxs )
             {
                 // If BORDNUM = 1 (BORDER_CELL), assign the border cell value
@@ -182,6 +235,8 @@ void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
     RigEclipseResultTools::createResultVector( *eclipseCase, RiaResultNames::opernum(), result );
 
     eclipseCase->updateConnectedEditors();
+
+    return borderCellValue;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -189,47 +244,99 @@ void generateOperNumResult( RimEclipseCase* eclipseCase, int borderCellValue )
 //--------------------------------------------------------------------------------------------------
 int findMaxOperNumValue( RimEclipseCase* eclipseCase )
 {
-    if ( eclipseCase == nullptr ) return 0;
+    // Try to find OPERNUM in both STATIC_NATIVE (from file) and GENERATED (created by us) categories
+    return findMaxResultValue( eclipseCase,
+                               RiaResultNames::opernum(),
+                               { RiaDefines::ResultCatType::STATIC_NATIVE, RiaDefines::ResultCatType::GENERATED } );
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+int findMaxBcconValue( RimEclipseCase* eclipseCase )
+{
+    // Look for BCCON in GENERATED category
+    return findMaxResultValue( eclipseCase, "BCCON", { RiaDefines::ResultCatType::GENERATED } );
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+void generateBcconResult( RimEclipseCase* eclipseCase, const caf::VecIjk0& min, const caf::VecIjk0& max )
+{
+    if ( eclipseCase == nullptr ) return;
 
     auto resultsData = eclipseCase->results( RiaDefines::PorosityModelType::MATRIX_MODEL );
-    if ( !resultsData ) return 0;
+    if ( !resultsData ) return;
 
-    // Try to find OPERNUM in both STATIC_NATIVE (from file) and GENERATED (created by us) categories
-    RigEclipseResultAddress operNumAddrNative( RiaDefines::ResultCatType::STATIC_NATIVE,
-                                               RiaDefines::ResultDataType::INTEGER,
-                                               RiaResultNames::opernum() );
-    RigEclipseResultAddress operNumAddrGenerated( RiaDefines::ResultCatType::GENERATED,
-                                                  RiaDefines::ResultDataType::INTEGER,
-                                                  RiaResultNames::opernum() );
+    auto grid = eclipseCase->eclipseCaseData()->mainGrid();
+    if ( !grid ) return;
 
-    RigEclipseResultAddress operNumAddr;
-    bool                    hasOperNum = false;
-
-    if ( resultsData->hasResultEntry( operNumAddrNative ) )
+    // Check if BORDNUM result exists
+    RigEclipseResultAddress bordNumAddr( RiaDefines::ResultCatType::GENERATED, RiaDefines::ResultDataType::INTEGER, RiaResultNames::bordnum() );
+    if ( !resultsData->hasResultEntry( bordNumAddr ) )
     {
-        operNumAddr = operNumAddrNative;
-        hasOperNum  = true;
-    }
-    else if ( resultsData->hasResultEntry( operNumAddrGenerated ) )
-    {
-        operNumAddr = operNumAddrGenerated;
-        hasOperNum  = true;
+        RiaLogging::warning( "BORDNUM result not found - cannot generate BCCON result" );
+        return;
     }
 
-    if ( !hasOperNum ) return 0;
+    resultsData->ensureKnownResultLoaded( bordNumAddr );
+    auto bordNumValues = resultsData->cellScalarResults( bordNumAddr, 0 );
+    if ( bordNumValues.empty() ) return;
 
-    resultsData->ensureKnownResultLoaded( operNumAddr );
-    auto operNumValues = resultsData->cellScalarResults( operNumAddr, 0 );
-    if ( operNumValues.empty() ) return 0;
+    auto activeReservoirCellIdxs =
+        eclipseCase->eclipseCaseData()->activeCellInfo( RiaDefines::PorosityModelType::MATRIX_MODEL )->activeReservoirCellIndices();
 
-    // Find maximum value
-    int maxValue = 0;
-    for ( double value : operNumValues )
+    size_t reservoirCellCount =
+        eclipseCase->eclipseCaseData()->activeCellInfo( RiaDefines::PorosityModelType::MATRIX_MODEL )->reservoirCellCount();
+    std::vector<int> result( reservoirCellCount, 0 );
+
+    // Iterate through all active cells
+    for ( auto activeCellIdx : activeReservoirCellIdxs )
     {
-        maxValue = std::max( maxValue, static_cast<int>( value ) );
+        // Check if this cell is a border cell
+        int borderValue = static_cast<int>( bordNumValues[activeCellIdx.value()] );
+        if ( borderValue != BorderType::BORDER_CELL ) continue;
+
+        // Get IJK indices for this cell
+        size_t i, j, k;
+        if ( !grid->ijkFromCellIndex( activeCellIdx.value(), &i, &j, &k ) ) continue;
+
+        // Determine which face of the box this cell is on
+        // Priority: I faces, then J faces, then K faces (for corner/edge cells)
+        int bcconValue = 0;
+
+        if ( i == min.x() )
+        {
+            bcconValue = 1; // I- face
+        }
+        else if ( i == max.x() )
+        {
+            bcconValue = 2; // I+ face
+        }
+        else if ( j == min.y() )
+        {
+            bcconValue = 3; // J- face
+        }
+        else if ( j == max.y() )
+        {
+            bcconValue = 4; // J+ face
+        }
+        else if ( k == min.z() )
+        {
+            bcconValue = 5; // K- face
+        }
+        else if ( k == max.z() )
+        {
+            bcconValue = 6; // K+ face
+        }
+
+        result[activeCellIdx.value()] = bcconValue;
     }
 
-    return maxValue;
+    RigEclipseResultTools::createResultVector( *eclipseCase, "BCCON", result );
+
+    eclipseCase->updateConnectedEditors();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -273,38 +380,39 @@ std::vector<BorderCellFace> generateBorderCellFaces( RimEclipseCase* eclipseCase
         if ( borderValue != BorderType::BORDER_CELL ) continue;
 
         // Get IJK indices for this cell
-        size_t i, j, k;
-        if ( !grid->ijkFromCellIndex( activeCellIdx.value(), &i, &j, &k ) ) continue;
-
-        // Check all 6 faces
-        std::vector<cvf::StructGridInterface::FaceType> faces = cvf::StructGridInterface::validFaceTypes();
-
-        for ( auto faceType : faces )
+        if ( auto ijk = grid->ijkFromCellIndex( activeCellIdx.value() ) )
         {
-            // Get neighbor cell IJK
-            size_t ni, nj, nk;
-            cvf::StructGridInterface::neighborIJKAtCellFace( i, j, k, faceType, &ni, &nj, &nk );
+            // Check all 6 faces
+            std::vector<cvf::StructGridInterface::FaceType> faces = cvf::StructGridInterface::validFaceTypes();
 
-            // Check if neighbor is within bounds
-            if ( ni >= grid->cellCountI() || nj >= grid->cellCountJ() || nk >= grid->cellCountK() ) continue;
-
-            // Get neighbor reservoir cell index
-            size_t neighborReservoirIdx = grid->cellIndexFromIJK( ni, nj, nk );
-
-            // Find active cell index for neighbor
-            auto it = std::find( activeReservoirCellIdxs.begin(), activeReservoirCellIdxs.end(), ReservoirCellIndex( neighborReservoirIdx ) );
-            if ( it == activeReservoirCellIdxs.end() ) continue; // Neighbor not active
-
-            // Check if neighbor is an interior cell
-            int neighborBorderValue = static_cast<int>( bordNumValues[neighborReservoirIdx] );
-            if ( neighborBorderValue == BorderType::INTERIOR_CELL )
+            for ( auto faceType : faces )
             {
-                // Get boundary condition value from BCCON grid property
-                int boundaryCondition = static_cast<int>( bcconValues[activeCellIdx.value()] );
-                if ( boundaryCondition > 0 )
+                // Get neighbor cell IJK
+                size_t ni, nj, nk;
+                cvf::StructGridInterface::neighborIJKAtCellFace( ijk->i(), ijk->j(), ijk->k(), faceType, &ni, &nj, &nk );
+
+                // Check if neighbor is within bounds
+                if ( ni >= grid->cellCountI() || nj >= grid->cellCountJ() || nk >= grid->cellCountK() ) continue;
+
+                // Get neighbor reservoir cell index
+                size_t neighborReservoirIdx = grid->cellIndexFromIJK( ni, nj, nk );
+
+                // Find active cell index for neighbor
+                auto it =
+                    std::find( activeReservoirCellIdxs.begin(), activeReservoirCellIdxs.end(), ReservoirCellIndex( neighborReservoirIdx ) );
+                if ( it == activeReservoirCellIdxs.end() ) continue; // Neighbor not active
+
+                // Check if neighbor is an interior cell
+                int neighborBorderValue = static_cast<int>( bordNumValues[neighborReservoirIdx] );
+                if ( neighborBorderValue == BorderType::INTERIOR_CELL )
                 {
-                    // Add this face to the result
-                    borderCellFaces.push_back( { cvf::Vec3st( i, j, k ), faceType, boundaryCondition } );
+                    // Get boundary condition value from BCCON grid property
+                    int boundaryCondition = static_cast<int>( bcconValues[activeCellIdx.value()] );
+                    if ( boundaryCondition > 0 )
+                    {
+                        // Add this face to the result
+                        borderCellFaces.push_back( { *ijk, faceType, boundaryCondition } );
+                    }
                 }
             }
         }

@@ -31,6 +31,7 @@ class RimEclipseCaseEnsemble;
 class RimSummaryEnsemble;
 class RimKeywordWconprod;
 class RimKeywordWconinje;
+class RimOpmFlowJobSettings;
 
 //==================================================================================================
 ///
@@ -65,6 +66,8 @@ public:
     QString deckName();
     QString mainWorkingDirectory() const;
 
+    static QString jobInputFileKey();
+
 protected:
     void defineEditorAttribute( const caf::PdmFieldHandle* field, QString uiConfigName, caf::PdmUiEditorAttribute* attribute ) override;
     void defineUiOrdering( QString uiConfigName, caf::PdmUiOrdering& uiOrdering ) override;
@@ -72,7 +75,8 @@ protected:
     QList<caf::PdmOptionItemInfo> calculateValueOptions( const caf::PdmFieldHandle* fieldNeedingOptions ) override;
     void                          initAfterRead() override;
 
-    void decodeProgress( const QString& logLine ) override;
+    bool matchesKeyValue( const QString& key, const QString& value ) const override;
+    void processLogOutput( const QString& logLine ) override;
 
     QStringList                command() override;
     std::map<QString, QString> environment() override;
@@ -89,9 +93,9 @@ protected:
 private:
     RimEclipseCase* findExistingCase( QString filename );
     QString         deckExtension() const;
-    QString         wellTempFile( int timeStep = -1, bool includeMSW = false, bool includeLGR = false ) const;
-    QString         baseDeckName() const;
-    QString         restartDeckName() const;
+    QString         baseDeckName();
+    QString         restartDeckName();
+    QString         inputDeckName() const;
 
     std::vector<QDateTime> datesInFileDeck();
     std::vector<QString>   wellgroupsInFileDeck();
@@ -100,12 +104,10 @@ private:
     std::vector<QDateTime> dateTimes();
     std::vector<QDateTime> addedDateTimes();
 
-    static QString readFileContent( QString filename );
-
-    int         mergeBasicWellSettings();
-    std::string exportMswWellSettings( int timeStep );
-    void        selectOpenWellPosition();
-    void        resetEnsembleRunId();
+    int  mergeBasicWellSettings();
+    int  mergeMswData( int mergePosition );
+    void selectOpenWellPosition();
+    void resetEnsembleRunId();
 
 private:
     caf::PdmField<caf::FilePath> m_deckFileName;
@@ -135,8 +137,9 @@ private:
     caf::PdmField<int>                          m_numberOfNewDates;
     caf::PdmField<caf::AppEnum<DateAppendType>> m_dateAppendType;
 
-    caf::PdmChildField<RimKeywordWconprod*> m_wconprodKeyword;
-    caf::PdmChildField<RimKeywordWconinje*> m_wconinjeKeyword;
+    caf::PdmChildField<RimKeywordWconprod*>    m_wconprodKeyword;
+    caf::PdmChildField<RimKeywordWconinje*>    m_wconinjeKeyword;
+    caf::PdmChildField<RimOpmFlowJobSettings*> m_jobSettings;
 
     caf::PdmField<QString> m_wellOpenKeyword;
 

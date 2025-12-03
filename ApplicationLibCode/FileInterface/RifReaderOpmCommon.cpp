@@ -642,6 +642,9 @@ bool RifReaderOpmCommon::dynamicResult( const QString&                result,
                 {
                     for ( auto& gridName : m_gridNames )
                     {
+                        // Do not try to read data that is not present in the file
+                        if ( !m_restartFile->hasArray( resultName, stepNumber ) ) continue;
+
                         if ( gridName == "global" ) // main grid, need to use separate method due to inner workings in opm_common
                         {
                             if ( kwType == EclIO::eclArrType::DOUB )
@@ -925,13 +928,21 @@ void RifReaderOpmCommon::buildMetaData( RigEclipseCaseData* eclipseCaseData, caf
         RiaDefines::EclipseUnitSystem unitsType      = RiaDefines::EclipseUnitSystem::UNITS_METRIC;
         int                           unitsTypeValue = -1;
 
+        namespace VI = Opm::RestartIO::Helpers::VectorItems;
+
         if ( m_restartFile != nullptr )
         {
-            if ( m_restartFile->hasArray( "INTEHEAD", 0 ) )
+            for ( auto reportStep : m_restartFile->listOfReportStepNumbers() )
             {
-                const auto& intHeader = m_restartFile->getRestartData<int>( "INTEHEAD", 0 );
-
-                if ( intHeader.size() > 2 ) unitsTypeValue = intHeader[2];
+                if ( m_restartFile->hasArray( "INTEHEAD", reportStep ) )
+                {
+                    const auto& intHeader = m_restartFile->getRestartData<int>( "INTEHEAD", reportStep );
+                    if ( intHeader.size() > VI::intehead::UNIT )
+                    {
+                        unitsTypeValue = intHeader[VI::intehead::UNIT];
+                        break;
+                    }
+                }
             }
         }
 
@@ -1098,6 +1109,8 @@ std::vector<std::vector<int>> RifReaderOpmCommon::readActiveCellInfoFromPorv( Ri
 
     std::vector<std::vector<int>> activeCellsAllGrids;
 
+    bool hasThermalData = m_initFile->hasArray( RiaResultNames::rockv().toStdString() );
+
     bool divideCellCountByTwo = isDualPorosity;
 
     const int nGrids = (int)m_gridNames.size();
@@ -1105,6 +1118,10 @@ std::vector<std::vector<int>> RifReaderOpmCommon::readActiveCellInfoFromPorv( Ri
     for ( int gridIdx = 0; gridIdx < nGrids; gridIdx++ )
     {
         auto porvValues = m_initFile->getInitData<float>( RiaResultNames::porv().toStdString(), m_gridNames[gridIdx] );
+        auto rockValues = hasThermalData ? m_initFile->getInitData<float>( RiaResultNames::rockv().toStdString(), m_gridNames[gridIdx] )
+                                         : std::vector<float>();
+
+        rockValues.resize( porvValues.size(), 0.0f ); // Ensure rockValues has same size as porvValues, fill with 0.0f if not present
 
         int activeCellCount = (int)porvValues.size();
         if ( divideCellCountByTwo )
@@ -1115,19 +1132,19 @@ std::vector<std::vector<int>> RifReaderOpmCommon::readActiveCellInfoFromPorv( Ri
         std::vector<int> activeCellsOneGrid;
         activeCellsOneGrid.resize( activeCellCount, 0 );
 
-        for ( int poreValueIndex = 0; poreValueIndex < static_cast<int>( porvValues.size() ); poreValueIndex++ )
+        for ( int resultIndex = 0; resultIndex < static_cast<int>( porvValues.size() ); resultIndex++ )
         {
-            int indexToCell = poreValueIndex;
+            int indexToCell = resultIndex;
             if ( indexToCell >= activeCellCount )
             {
-                indexToCell = poreValueIndex - activeCellCount;
+                indexToCell = resultIndex - activeCellCount;
             }
 
-            if ( porvValues[poreValueIndex] > 0.0f )
+            if ( porvValues[resultIndex] > 0.0f )
             {
                 if ( isDualPorosity )
                 {
-                    if ( poreValueIndex < activeCellCount )
+                    if ( resultIndex < activeCellCount )
                     {
                         activeCellsOneGrid[indexToCell] += (int)ActiveType::ACTIVE_MATRIX_VALUE;
                     }
@@ -1137,6 +1154,13 @@ std::vector<std::vector<int>> RifReaderOpmCommon::readActiveCellInfoFromPorv( Ri
                     }
                 }
                 else
+                {
+                    activeCellsOneGrid[indexToCell] += (int)ActiveType::ACTIVE_MATRIX_VALUE;
+                }
+            }
+            if ( rockValues[resultIndex] > 0.0f )
+            {
+                if ( activeCellsOneGrid[indexToCell] == 0 )
                 {
                     activeCellsOneGrid[indexToCell] += (int)ActiveType::ACTIVE_MATRIX_VALUE;
                 }

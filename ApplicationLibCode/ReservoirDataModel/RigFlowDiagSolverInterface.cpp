@@ -29,106 +29,39 @@
 #include "RigCaseCellResultsData.h"
 #include "RigEclipseCaseData.h"
 #include "RigEclipseResultAddress.h"
-
 #include "RigFlowDiagInterfaceTools.h"
+
+#include "RimEclipseCase.h"
+#include "RimEclipseResultCase.h"
+#include "RimFlowDiagSolution.h"
+
 #include "opm/flowdiagnostics/DerivedQuantities.hpp"
 
 #include "opm/utility/ECLPropertyUnitConversion.hpp"
 #include "opm/utility/ECLPvtCurveCollection.hpp"
 #include "opm/utility/ECLSaturationFunc.hpp"
 
-#include "RimEclipseCase.h"
-#include "RimEclipseResultCase.h"
-#include "RimFlowDiagSolution.h"
-
 #include "cafProgressInfo.h"
 
 #include "cvfTrace.h"
 
-//--------------------------------------------------------------------------------------------------
-///
-//--------------------------------------------------------------------------------------------------
-RigFlowDiagTimeStepResult::RigFlowDiagTimeStepResult( size_t activeCellCount )
-    : m_activeCellCount( activeCellCount )
-{
-}
-
-//--------------------------------------------------------------------------------------------------
-///
-//--------------------------------------------------------------------------------------------------
-void RigFlowDiagTimeStepResult::setTracerTOF( const std::string&                       tracerName,
-                                              RigFlowDiagResultAddress::PhaseSelection phaseSelection,
-                                              const std::map<int, double>&             cellValues )
-{
-    std::set<std::string> tracers;
-    tracers.insert( tracerName );
-
-    RigFlowDiagResultAddress resAddr( RigFlowDiagDefines::tofResultName().toStdString(), phaseSelection, tracers );
-
-    addResult( resAddr, cellValues );
-
-    std::vector<double>& activeCellValues = m_nativeResults[resAddr];
-    for ( double& val : activeCellValues )
-    {
-        val = val * 1.15741e-5; // days pr second. Converting to days
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-///
-//--------------------------------------------------------------------------------------------------
-void RigFlowDiagTimeStepResult::setTracerFraction( const std::string&                       tracerName,
-                                                   RigFlowDiagResultAddress::PhaseSelection phaseSelection,
-                                                   const std::map<int, double>&             cellValues )
-{
-    std::set<std::string> tracers;
-    tracers.insert( tracerName );
-
-    addResult( RigFlowDiagResultAddress( RigFlowDiagDefines::cellFractionResultName().toStdString(), phaseSelection, tracers ), cellValues );
-}
-
-//--------------------------------------------------------------------------------------------------
-///
-//--------------------------------------------------------------------------------------------------
-void RigFlowDiagTimeStepResult::setInjProdWellPairFlux( const std::string&               injectorTracerName,
-                                                        const std::string&               producerTracerName,
-                                                        const std::pair<double, double>& injProdFluxes )
-{
-    m_injProdWellPairFluxes[std::make_pair( injectorTracerName, producerTracerName )] = injProdFluxes;
-}
-
-//--------------------------------------------------------------------------------------------------
-///
-//--------------------------------------------------------------------------------------------------
-void RigFlowDiagTimeStepResult::addResult( const RigFlowDiagResultAddress& resAddr, const std::map<int, double>& cellValues )
-{
-    std::vector<double>& activeCellValues = m_nativeResults[resAddr];
-
-    CVF_ASSERT( activeCellValues.empty() );
-
-    activeCellValues.resize( m_activeCellCount, HUGE_VAL );
-
-    for ( const auto& pairIt : cellValues )
-    {
-        activeCellValues[pairIt.first] = pairIt.second;
-    }
-}
-
 class RigOpmFlowDiagStaticData
 {
 public:
-    RigOpmFlowDiagStaticData( const ecl_grid_type* mainGrid, const std::wstring& init, RiaDefines::EclipseUnitSystem caseUnitSystem )
+    RigOpmFlowDiagStaticData( const ecl_grid_type* mainGrid, const std::wstring& initFilename, RiaDefines::EclipseUnitSystem caseUnitSystem )
+        : m_initData( initFilename )
     {
-        Opm::ECLInitFileData initData( init );
-
         try
         {
-            m_eclGraph = std::make_unique<Opm::ECLGraph>( Opm::ECLGraph::load( mainGrid, initData ) );
+            if ( mainGrid )
+            {
+                m_eclGraph   = std::make_unique<Opm::ECLGraph>( Opm::ECLGraph::load( mainGrid, m_initData ) );
+                m_poreVolume = m_eclGraph->poreVolume();
+            }
 
             m_hasUnifiedRestartFile = false;
-            m_poreVolume            = m_eclGraph->poreVolume();
 
-            m_eclSaturationFunc = std::make_unique<Opm::ECLSaturationFunc>( *m_eclGraph, initData );
+            m_eclSaturationFunc = std::make_unique<Opm::ECLSaturationFunc>( m_initData );
         }
         catch ( ... )
         {
@@ -138,7 +71,7 @@ public:
 
         try
         {
-            m_eclPvtCurveCollection = std::make_unique<Opm::ECLPVT::ECLPvtCurveCollection>( *m_eclGraph, initData );
+            m_eclPvtCurveCollection = std::make_unique<Opm::ECLPVT::ECLPvtCurveCollection>( m_initData );
         }
         catch ( ... )
         {
@@ -168,6 +101,7 @@ public:
     }
 
 public:
+    Opm::ECLInitFileData                           m_initData;
     std::unique_ptr<Opm::ECLGraph>                 m_eclGraph;
     std::vector<double>                            m_poreVolume;
     std::unique_ptr<Opm::FlowDiagnostics::Toolbox> m_fldToolbox;
@@ -237,7 +171,7 @@ RigFlowDiagTimeStepResult RigFlowDiagSolverInterface::calculate( size_t         
     {
         progressInfo.setProgressDescription( "Grid access" );
 
-        if ( !ensureStaticDataObjectInstanceCreated() )
+        if ( !ensureStaticDataObjectInstanceCreated() || !m_opmFlowDiagStaticData->m_eclGraph )
         {
             return result;
         }
@@ -511,19 +445,23 @@ bool RigFlowDiagSolverInterface::ensureStaticDataObjectInstanceCreated()
         const RigEclipseCaseData* eclipseCaseData = m_eclipseCase->eclipseCaseData();
         if ( eclipseCaseData )
         {
-            auto fileReader = eclipseCaseData->results( RiaDefines::PorosityModelType::MATRIX_MODEL )->readerInterface();
-            auto eclOutput  = dynamic_cast<const RifReaderEclipseOutput*>( fileReader );
-            if ( eclOutput )
+            auto           fileReader = eclipseCaseData->results( RiaDefines::PorosityModelType::MATRIX_MODEL )->readerInterface();
+            ecl_grid_type* mainGrid   = nullptr;
+
+            if ( auto eclOutput = dynamic_cast<const RifReaderEclipseOutput*>( fileReader ) )
             {
-                ecl_grid_type* mainGrid = eclOutput->loadAllGrids();
+                mainGrid = eclOutput->loadAllGrids();
                 if ( !mainGrid )
                 {
                     return false;
                 }
+            }
 
-                RiaDefines::EclipseUnitSystem caseUnitSystem = eclipseCaseData->unitsType();
-                m_opmFlowDiagStaticData = std::make_unique<RigOpmFlowDiagStaticData>( mainGrid, initFileName, caseUnitSystem );
+            RiaDefines::EclipseUnitSystem caseUnitSystem = eclipseCaseData->unitsType();
+            m_opmFlowDiagStaticData = std::make_unique<RigOpmFlowDiagStaticData>( mainGrid, initFileName, caseUnitSystem );
 
+            if ( mainGrid )
+            {
                 ecl_grid_free( mainGrid );
             }
         }
@@ -654,8 +592,11 @@ RigFlowDiagDefines::FlowCharacteristicsResultFrame
 //--------------------------------------------------------------------------------------------------
 ///
 //--------------------------------------------------------------------------------------------------
-std::vector<RigFlowDiagDefines::RelPermCurve> RigFlowDiagSolverInterface::calculateRelPermCurves( size_t activeCellIndex )
+std::vector<RigFlowDiagDefines::RelPermCurve> RigFlowDiagSolverInterface::calculateRelPermCurves( const std::string& gridName,
+                                                                                                  size_t gridLocalActiveCellIndex )
 {
+    using RawCurve = Opm::ECLSaturationFunc::RawCurve;
+
     std::vector<RigFlowDiagDefines::RelPermCurve> retCurveArr;
 
     if ( !ensureStaticDataObjectInstanceCreated() )
@@ -669,41 +610,60 @@ std::vector<RigFlowDiagDefines::RelPermCurve> RigFlowDiagSolverInterface::calcul
         return retCurveArr;
     }
 
-    const Opm::ECLSaturationFunc::RawCurve krw{ Opm::ECLSaturationFunc::RawCurve::Function::RelPerm,
-                                                Opm::ECLSaturationFunc::RawCurve::SubSystem::OilWater,
-                                                Opm::ECLPhaseIndex::Aqua }; // water rel-perm in oil-water system
-    const Opm::ECLSaturationFunc::RawCurve krg{ Opm::ECLSaturationFunc::RawCurve::Function::RelPerm,
-                                                Opm::ECLSaturationFunc::RawCurve::SubSystem::OilGas,
-                                                Opm::ECLPhaseIndex::Vapour }; // gas rel-perm in oil-gas system
-    const Opm::ECLSaturationFunc::RawCurve krow{ Opm::ECLSaturationFunc::RawCurve::Function::RelPerm,
-                                                 Opm::ECLSaturationFunc::RawCurve::SubSystem::OilWater,
-                                                 Opm::ECLPhaseIndex::Liquid }; // oil rel-perm in oil-water system
-    const Opm::ECLSaturationFunc::RawCurve krog{ Opm::ECLSaturationFunc::RawCurve::Function::RelPerm,
-                                                 Opm::ECLSaturationFunc::RawCurve::SubSystem::OilGas,
-                                                 Opm::ECLPhaseIndex::Liquid }; // oil rel-perm in oil-gas system
-    const Opm::ECLSaturationFunc::RawCurve pcgo{ Opm::ECLSaturationFunc::RawCurve::Function::CapPress,
-                                                 Opm::ECLSaturationFunc::RawCurve::SubSystem::OilGas,
-                                                 Opm::ECLPhaseIndex::Vapour }; // gas/oil capillary pressure (Pg-Po) in
-                                                                               // G/O system
-    const Opm::ECLSaturationFunc::RawCurve pcow{ Opm::ECLSaturationFunc::RawCurve::Function::CapPress,
-                                                 Opm::ECLSaturationFunc::RawCurve::SubSystem::OilWater,
-                                                 Opm::ECLPhaseIndex::Aqua }; // oil/water capillary pressure (Po-Pw) in
-                                                                             // O/W system
+    // Define curve sets to request (Drainage and Imbibition)
+    const std::array<RawCurve::CurveSet, 2> curveSets = { RawCurve::CurveSet::Drainage, RawCurve::CurveSet::Imbibition };
 
-    std::vector<std::pair<RigFlowDiagDefines::RelPermCurve::Ident, std::string>> curveIdentNameArr;
-    std::vector<Opm::ECLSaturationFunc::RawCurve>                                satFuncRequests;
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::KRW, "KRW" ) );
-    satFuncRequests.push_back( krw );
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::KRG, "KRG" ) );
-    satFuncRequests.push_back( krg );
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::KROW, "KROW" ) );
-    satFuncRequests.push_back( krow );
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::KROG, "KROG" ) );
-    satFuncRequests.push_back( krog );
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::PCOG, "PCOG" ) );
-    satFuncRequests.push_back( pcgo );
-    curveIdentNameArr.push_back( std::make_pair( RigFlowDiagDefines::RelPermCurve::PCOW, "PCOW" ) );
-    satFuncRequests.push_back( pcow );
+    // Base curve definitions - will be created for each curve set
+    struct CurveDefinition
+    {
+        RawCurve::Function                      function;
+        RawCurve::SubSystem                     subsystem;
+        Opm::ECLPhaseIndex                      phase;
+        RigFlowDiagDefines::RelPermCurve::Ident ident;
+        std::string                             baseName;
+    };
+
+    const std::vector<CurveDefinition> baseCurves =
+        { { RawCurve::Function::RelPerm, RawCurve::SubSystem::OilWater, Opm::ECLPhaseIndex::Aqua, RigFlowDiagDefines::RelPermCurve::KRW, "KRW" },
+          { RawCurve::Function::RelPerm, RawCurve::SubSystem::OilGas, Opm::ECLPhaseIndex::Vapour, RigFlowDiagDefines::RelPermCurve::KRG, "KRG" },
+          { RawCurve::Function::RelPerm, RawCurve::SubSystem::OilWater, Opm::ECLPhaseIndex::Liquid, RigFlowDiagDefines::RelPermCurve::KROW, "KROW" },
+          { RawCurve::Function::RelPerm, RawCurve::SubSystem::OilGas, Opm::ECLPhaseIndex::Liquid, RigFlowDiagDefines::RelPermCurve::KROG, "KROG" },
+          { RawCurve::Function::CapPress, RawCurve::SubSystem::OilGas, Opm::ECLPhaseIndex::Vapour, RigFlowDiagDefines::RelPermCurve::PCOG, "PCOG" },
+          { RawCurve::Function::CapPress, RawCurve::SubSystem::OilWater, Opm::ECLPhaseIndex::Aqua, RigFlowDiagDefines::RelPermCurve::PCOW, "PCOW" } };
+
+    struct CurveRequest
+    {
+        RigFlowDiagDefines::RelPermCurve::Ident    ident;
+        std::string                                name;
+        RigFlowDiagDefines::RelPermCurve::CurveSet curveSet;
+    };
+
+    std::vector<CurveRequest> curveRequests;
+    std::vector<RawCurve>     satFuncRequests;
+
+    // Build requests for both drainage and imbibition curves
+    for ( const auto& curveSet : curveSets )
+    {
+        for ( const auto& baseCurve : baseCurves )
+        {
+            const RawCurve curve{ baseCurve.function, baseCurve.subsystem, baseCurve.phase, curveSet };
+
+            // Create appropriate name for the curve (prefix "I" for imbibition curves)
+            std::string curveName = baseCurve.baseName;
+            if ( curveSet == RawCurve::CurveSet::Imbibition )
+            {
+                curveName = "I" + curveName;
+            }
+
+            // Map OPM CurveSet to RigFlowDiagDefines CurveSet
+            RigFlowDiagDefines::RelPermCurve::CurveSet rigCurveSet = ( curveSet == RawCurve::CurveSet::Drainage )
+                                                                         ? RigFlowDiagDefines::RelPermCurve::DRAINAGE
+                                                                         : RigFlowDiagDefines::RelPermCurve::IMBIBITION;
+
+            curveRequests.push_back( { baseCurve.ident, curveName, rigCurveSet } );
+            satFuncRequests.push_back( curve );
+        }
+    }
 
     try
     {
@@ -720,18 +680,32 @@ std::vector<RigFlowDiagDefines::RelPermCurve> RigFlowDiagSolverInterface::calcul
             {
                 scaling.enable = static_cast<unsigned char>( 0 );
             }
+
             std::vector<Opm::FlowDiagnostics::Graph> graphArr =
-                m_opmFlowDiagStaticData->m_eclSaturationFunc->getSatFuncCurve( satFuncRequests, static_cast<int>( activeCellIndex ), scaling );
+                m_opmFlowDiagStaticData->m_eclSaturationFunc->getSatFuncCurve( satFuncRequests,
+                                                                               m_opmFlowDiagStaticData->m_initData,
+                                                                               gridName,
+                                                                               static_cast<int>( gridLocalActiveCellIndex ),
+                                                                               scaling );
+
+            // Process results - now includes both drainage and imbibition curves
+            if ( graphArr.size() != satFuncRequests.size() )
+            {
+                reportRelPermCurveError( "Mismatch between number of requested and received rel-perm curves." );
+                continue;
+            }
+
             for ( size_t i = 0; i < graphArr.size(); i++ )
             {
-                const RigFlowDiagDefines::RelPermCurve::Ident curveIdent = curveIdentNameArr[i].first;
-                const std::string                             curveName  = curveIdentNameArr[i].second;
-                const Opm::FlowDiagnostics::Graph&            srcGraph   = graphArr[i];
+                const RigFlowDiagDefines::RelPermCurve::Ident    curveIdent = curveRequests[i].ident;
+                const std::string&                               curveName  = curveRequests[i].name;
+                const RigFlowDiagDefines::RelPermCurve::CurveSet curveSet   = curveRequests[i].curveSet;
+                const Opm::FlowDiagnostics::Graph&               srcGraph   = graphArr[i];
                 if ( !srcGraph.first.empty() )
                 {
                     const std::vector<double>& xVals = srcGraph.first;
                     const std::vector<double>& yVals = srcGraph.second;
-                    retCurveArr.push_back( { curveIdent, curveName, epsMode, xVals, yVals } );
+                    retCurveArr.push_back( { curveIdent, curveName, epsMode, curveSet, xVals, yVals } );
                 }
             }
         }

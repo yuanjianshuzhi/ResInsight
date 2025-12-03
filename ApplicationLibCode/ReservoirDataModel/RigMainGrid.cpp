@@ -179,7 +179,7 @@ size_t RigMainGrid::findReservoirCellIndexFromPoint( const cvf::Vec3d& point ) c
 void RigMainGrid::addLocalGrid( RigLocalGrid* localGrid )
 {
     CVF_ASSERT( localGrid && localGrid->gridId() != cvf::UNDEFINED_INT ); // The grid ID must be set.
-    CVF_ASSERT( localGrid->gridId() >= 0 ); // We cant handle negative ID's if they exist.
+    CVF_ASSERT( localGrid->gridId() >= 0 ); // We can't handle negative ID's if they exist.
 
     m_localGrids.push_back( localGrid );
     localGrid->setGridIndex( m_localGrids.size() ); // Maingrid itself has grid index 0
@@ -300,7 +300,7 @@ const RigGridBase* RigMainGrid::gridByIndex( size_t localGridIndex ) const
 }
 
 //--------------------------------------------------------------------------------------------------
-/// Returns the grid with the given name. Main Grid itself could be retreived by using name ""
+/// Returns the grid with the given name. Main Grid itself could be retrieved by using name ""
 //--------------------------------------------------------------------------------------------------
 RigGridBase* RigMainGrid::gridByName( const std::string& name )
 {
@@ -920,6 +920,27 @@ void RigMainGrid::buildCellSearchTree() const
 //--------------------------------------------------------------------------------------------------
 void RigMainGrid::buildCellSearchTreeOptimized( size_t cellsPerBoundingBox ) const
 {
+    // map from main grid cell index to list of LGR cells with main grid cell as parent cell
+    // used to speed up cell children lookup during search tree building
+    std::map<size_t, std::vector<int>> subCellIndicesForMainGridCells;
+
+    for ( auto& subGrid : m_localGrids )
+    {
+        if ( subGrid->parentGrid() == this )
+        {
+            for ( size_t localIdx = 0; localIdx < subGrid->cellCount(); localIdx++ )
+            {
+                const auto& localCell = subGrid->cell( localIdx );
+                if ( localCell.isInvalid() ) continue;
+                if ( !subCellIndicesForMainGridCells.contains( localCell.mainGridCellIndex() ) )
+                {
+                    subCellIndicesForMainGridCells[localCell.mainGridCellIndex()] = {};
+                }
+                subCellIndicesForMainGridCells[localCell.mainGridCellIndex()].push_back( (int)subGrid->reservoirCellIndex( localIdx ) );
+            }
+        }
+    }
+
     int threadCount = RiaOpenMPTools::availableThreadCount();
 
     std::vector<std::vector<std::vector<int>>> threadCellIndicesForBoundingBoxes( threadCount );
@@ -951,17 +972,10 @@ void RigMainGrid::buildCellSearchTreeOptimized( size_t cellsPerBoundingBox ) con
                         {
                             aggregatedCellIndices.push_back( static_cast<int>( cellIdx ) );
 
-                            // Add all cells in sub grid contained in this main grid cell
-                            if ( auto subGrid = rigCell.subGrid() )
+                            if ( subCellIndicesForMainGridCells.contains( cellIdx ) )
                             {
-                                for ( size_t localIdx = 0; localIdx < subGrid->cellCount(); localIdx++ )
-                                {
-                                    const auto& localCell = subGrid->cell( localIdx );
-                                    if ( localCell.mainGridCellIndex() == cellIdx )
-                                    {
-                                        aggregatedCellIndices.push_back( static_cast<int>( subGrid->reservoirCellIndex( localIdx ) ) );
-                                    }
-                                }
+                                const auto& subCellIndices = subCellIndicesForMainGridCells[cellIdx];
+                                aggregatedCellIndices.insert( aggregatedCellIndices.end(), subCellIndices.begin(), subCellIndices.end() );
                             }
 
                             const std::array<size_t, 8>& cellIndices = rigCell.cornerIndices();
@@ -1121,7 +1135,7 @@ std::array<double, 6> RigMainGrid::defaultMapAxes()
     const double xPoint[2] = { 1.0, 0.0 };
     const double yPoint[2] = { 0.0, 1.0 };
 
-    // Order (see Elipse Reference Manual for keyword MAPAXES): Y_x, Y_y, O_x, O_y, X_x, X_y
+    // Order (see Reference Manual for keyword MAPAXES): Y_x, Y_y, O_x, O_y, X_x, X_y
     return { yPoint[0], yPoint[1], origin[0], origin[1], xPoint[0], xPoint[1] };
 }
 
