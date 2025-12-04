@@ -375,7 +375,7 @@ void RiuViewerCommands::displayContextMenu( QMouseEvent* event )
                     kSliceList.push_back( std::max( static_cast<int>( k + 1 ), 1 ) );
                     kSliceList.push_back( static_cast<int>( m_currentGridIdx ) );
 
-                    menuBuilder.subMenuStart( "Range Filter", QIcon( ":/CellFilter_Range.png" ) );
+                    menuBuilder.subMenuStart( "Range Filter", QIcon( ":/CellFilter_Range.svg" ) );
 
                     if ( isRadialGrid( mainOrComparisonView, m_currentGridIdx ) )
                     {

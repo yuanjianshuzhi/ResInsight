@@ -60,6 +60,6 @@ void RicNewPolygonFilter3dviewFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewPolygonFilter3dviewFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Polygon.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Polygon.svg" ) );
     actionToSetup->setText( "Polygon Filter" );
 }

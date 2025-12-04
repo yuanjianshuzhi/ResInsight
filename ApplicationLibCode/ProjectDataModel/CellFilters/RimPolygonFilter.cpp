@@ -95,7 +95,7 @@ RimPolygonFilter::RimPolygonFilter()
     , m_intervalTool( true )
     , m_isSelected( false )
 {
-    CAF_PDM_InitObject( "Polyline Filter", ":/CellFilter_Polygon.png" );
+    CAF_PDM_InitObject( "Polyline Filter", ":/CellFilter_Polygon.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_polyFilterMode, "PolygonFilterType", "Vertical Filter" );
 

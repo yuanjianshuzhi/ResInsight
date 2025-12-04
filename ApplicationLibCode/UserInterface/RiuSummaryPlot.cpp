@@ -161,7 +161,7 @@ void RiuSummaryPlot::showContextMenu( QPoint pos )
                     {
                         subMenuName = "Create Correlation Plot From Curve Point";
                     }
-                    menuBuilder.subMenuStart( subMenuName, *caf::IconProvider( ":/CorrelationPlots16x16.png" ).icon() );
+                    menuBuilder.subMenuStart( subMenuName, *caf::IconProvider( ":/CorrelationPlots16x16.svg" ).icon() );
 
                     {
                         if ( curveClicked )

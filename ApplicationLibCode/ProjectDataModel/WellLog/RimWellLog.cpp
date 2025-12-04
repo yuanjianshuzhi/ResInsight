@@ -43,7 +43,7 @@ const QDateTime RimWellLog::DEFAULT_DATE_TIME = RiaQDateTimeTools::createUtcDate
 //--------------------------------------------------------------------------------------------------
 RimWellLog::RimWellLog()
 {
-    CAF_PDM_InitObject( "Well File Info", ":/LasFile16x16.png" );
+    CAF_PDM_InitObject( "Well File Info", ":/LasFile16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_date, "Date", "Date" );
 

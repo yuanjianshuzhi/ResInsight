@@ -54,5 +54,5 @@ void RicNewEmptySummaryMultiPlotFeature::onActionTriggered( bool isChecked )
 void RicNewEmptySummaryMultiPlotFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Add Summary Plot" );
-    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.svg" ) );
 }

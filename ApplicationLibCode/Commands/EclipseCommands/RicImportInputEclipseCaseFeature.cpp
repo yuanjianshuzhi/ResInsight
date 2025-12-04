@@ -36,6 +36,6 @@ void RicImportInputEclipseCaseFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicImportInputEclipseCaseFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/EclipseInput48x48.png" ) );
+    actionToSetup->setIcon( QIcon( ":/EclipseInput48x48.svg" ) );
     actionToSetup->setText( "Import Input Eclipse Case" );
 }

@@ -29,7 +29,7 @@ CAF_PDM_SOURCE_INIT( RimMultiPlotCollection, "RimMultiPlotCollection" );
 //--------------------------------------------------------------------------------------------------
 RimMultiPlotCollection::RimMultiPlotCollection()
 {
-    CAF_PDM_InitObject( "Multi Plots", ":/MultiPlot16x16.png" );
+    CAF_PDM_InitObject( "Multi Plots", ":/MultiPlots.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_multiPlots, "MultiPlots", "Plots Reports" );
     caf::PdmFieldReorderCapability::addToField( &m_multiPlots );

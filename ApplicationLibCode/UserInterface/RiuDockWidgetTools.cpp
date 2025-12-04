@@ -393,13 +393,13 @@ QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
     else if ( dockWidgetName == mainWindowProjectTreeName() )
         return QIcon( ":/standard.svg" );
     else if ( dockWidgetName == mainWindowDataSourceTreeName() )
-        return QIcon( ":/Calculator.svg" );
+        return QIcon( ":/Calculator_Blue.svg" );
     else if ( dockWidgetName == mainWindowScriptsTreeName() )
         return QIcon( ":/scripts.svg" );
     else if ( dockWidgetName == mainPlotWindowName() )
         return QIcon( ":/window-management.svg" );
     else if ( dockWidgetName == main3DWindowName() )
-        return QIcon( ":/window-management.svg" );
+        return QIcon( ":/3DView16x16.svg" );
     else if ( dockWidgetName == mainWindowSeismicHistogramName() )
         return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == plotMainWindowCloudTreeName() )

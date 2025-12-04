@@ -92,5 +92,5 @@ void RicWellLogsImportFileFeature::onActionTriggered( bool isChecked )
 void RicWellLogsImportFileFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Import Well &Logs from File" );
-    actionToSetup->setIcon( QIcon( ":/LasFile16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/LasFile16x16.svg" ) );
 }

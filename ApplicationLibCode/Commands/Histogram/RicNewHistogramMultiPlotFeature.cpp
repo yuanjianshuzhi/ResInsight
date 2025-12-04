@@ -63,5 +63,5 @@ void RicNewHistogramMultiPlotFeature::onActionTriggered( bool isChecked )
 void RicNewHistogramMultiPlotFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "New Histogram Plot" );
-    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.svg" ) );
 }

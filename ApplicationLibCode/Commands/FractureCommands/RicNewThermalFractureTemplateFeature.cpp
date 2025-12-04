@@ -86,7 +86,7 @@ void RicNewThermalFractureTemplateFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewThermalFractureTemplateFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.svg" ) );
     actionToSetup->setText( "New Thermal Fracture Template" );
 }
 

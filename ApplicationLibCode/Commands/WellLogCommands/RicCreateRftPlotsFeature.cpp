@@ -162,5 +162,5 @@ void RicCreateRftPlotsFeature::appendRftPlotForWell( const QString& wellName, Ri
 void RicCreateRftPlotsFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Multiple RFT Plots" );
-    actionToSetup->setIcon( QIcon( ":/FlowCharPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FlowCharPlot16x16.svg" ) );
 }

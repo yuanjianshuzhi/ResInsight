@@ -31,7 +31,7 @@ CAF_PDM_SOURCE_INIT( RimSummaryTableCollection, "RimSummaryTableCollection" );
 //--------------------------------------------------------------------------------------------------
 RimSummaryTableCollection::RimSummaryTableCollection()
 {
-    CAF_PDM_InitObject( "Summary Tables", ":/CorrelationMatrixPlot16x16.png" );
+    CAF_PDM_InitObject( "Summary Tables", ":/CorrelationMatrixPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_summaryTables, "SummaryTables", "Summary Tables" );
     caf::PdmFieldReorderCapability::addToField( &m_summaryTables );

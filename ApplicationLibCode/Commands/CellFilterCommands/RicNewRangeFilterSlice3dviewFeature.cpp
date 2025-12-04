@@ -111,5 +111,5 @@ void RicNewRangeFilterSlice3dviewFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewRangeFilterSlice3dviewFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Range.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Range.svg" ) );
 }

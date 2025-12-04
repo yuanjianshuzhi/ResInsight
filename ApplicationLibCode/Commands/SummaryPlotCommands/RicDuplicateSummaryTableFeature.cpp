@@ -52,7 +52,7 @@ void RicDuplicateSummaryTableFeature::onActionTriggered( bool isChecked )
 void RicDuplicateSummaryTableFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Duplicate Summary Table" );
-    actionToSetup->setIcon( QIcon( ":/CorrelationMatrixPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CorrelationMatrixPlot16x16.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

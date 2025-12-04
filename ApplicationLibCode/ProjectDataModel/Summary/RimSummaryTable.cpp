@@ -64,7 +64,7 @@ void AppEnum<RimSummaryTable::RangeType>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimSummaryTable::RimSummaryTable()
 {
-    CAF_PDM_InitObject( "Summary Table", ":/CorrelationMatrixPlot16x16.png" );
+    CAF_PDM_InitObject( "Summary Table", ":/CorrelationMatrixPlot16x16.svg" );
     uiCapability()->setUiTreeChildrenHidden( true );
 
     CAF_PDM_InitField( &m_tableName, "TableName", QString( "Summary Table" ), "Name" );

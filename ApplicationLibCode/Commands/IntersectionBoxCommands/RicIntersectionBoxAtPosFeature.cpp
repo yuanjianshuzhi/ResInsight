@@ -74,6 +74,6 @@ void RicIntersectionBoxAtPosFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicIntersectionBoxAtPosFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/IntersectionBox16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/IntersectionBox16x16.svg" ) );
     actionToSetup->setText( "Intersection Box" );
 }

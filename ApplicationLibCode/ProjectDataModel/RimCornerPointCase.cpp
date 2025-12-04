@@ -54,7 +54,7 @@ CAF_PDM_SOURCE_INIT( RimCornerPointCase, "CornerPointCase", "RimCornerPointCase"
 RimCornerPointCase::RimCornerPointCase()
     : RimEclipseCase()
 {
-    CAF_PDM_InitScriptableObject( "RimCornerPointCase", ":/EclipseInput48x48.png" );
+    CAF_PDM_InitScriptableObject( "RimCornerPointCase", ":/EclipseInput48x48.svg" );
     setReservoirData( new RigEclipseCaseData( this ) );
 }
 

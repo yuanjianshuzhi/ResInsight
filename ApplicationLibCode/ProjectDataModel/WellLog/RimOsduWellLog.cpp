@@ -35,7 +35,7 @@ CAF_PDM_SOURCE_INIT( RimOsduWellLog, "OsduWellLog" );
 //--------------------------------------------------------------------------------------------------
 RimOsduWellLog::RimOsduWellLog()
 {
-    CAF_PDM_InitObject( "OSDU Well Log", ":/LasFile16x16.png" );
+    CAF_PDM_InitObject( "OSDU Well Log", ":/LasFile16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_name, "Name", "" );
     m_name.uiCapability()->setUiReadOnly( true );

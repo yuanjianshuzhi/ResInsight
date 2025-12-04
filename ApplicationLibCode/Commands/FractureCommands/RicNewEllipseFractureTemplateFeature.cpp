@@ -97,6 +97,6 @@ void RicNewEllipseFractureTemplateFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewEllipseFractureTemplateFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.svg" ) );
     actionToSetup->setText( "New Ellipse Fracture Template" );
 }

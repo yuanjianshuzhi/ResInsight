@@ -64,7 +64,7 @@ void RicNewAzimuthDipIntersectionFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewAzimuthDipIntersectionFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CrossSection16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/Azimuth and dip intersection.svg" ) );
     actionToSetup->setText( "Azimuth and Dip Intersection" );
 }
 

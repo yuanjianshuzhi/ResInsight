@@ -30,7 +30,7 @@ CAF_PDM_SOURCE_INIT( RimStimPlanModelPlotCollection, "StimPlanModelPlotCollectio
 //--------------------------------------------------------------------------------------------------
 RimStimPlanModelPlotCollection::RimStimPlanModelPlotCollection()
 {
-    CAF_PDM_InitScriptableObject( "StimPlan Model Plots", ":/WellLogPlots16x16.png" );
+    CAF_PDM_InitScriptableObject( "StimPlan Model Plots", ":/StimPlanModelPlots.svg" );
 
     CAF_PDM_InitScriptableFieldNoDefault( &m_stimPlanModelPlots, "StimPlanModelPlots", "" );
 }

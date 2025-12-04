@@ -142,7 +142,7 @@ void RimCellFilterCollection::appendMenuItems( caf::CmdFeatureMenuBuilder& menuB
     menuBuilder << "RicPasteCellFiltersFeature";
     menuBuilder << "Separator";
 
-    menuBuilder.subMenuStart( "Polygon Filter", QIcon( ":/CellFilter_Polygon.png" ) );
+    menuBuilder.subMenuStart( "Polygon Filter", QIcon( ":/CellFilter_Polygon.svg" ) );
     {
         auto polygonCollection = RimTools::polygonCollection();
         for ( auto p : polygonCollection->allPolygons() )

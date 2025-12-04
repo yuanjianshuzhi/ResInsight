@@ -63,7 +63,7 @@ const RivIntersectionGeometryGeneratorInterface* RimBoxIntersection::intersectio
 //--------------------------------------------------------------------------------------------------
 RimBoxIntersection::RimBoxIntersection()
 {
-    CAF_PDM_InitObject( "Intersection Box", ":/IntersectionBox16x16.png" );
+    CAF_PDM_InitObject( "Intersection Box", ":/IntersectionBox16x16.svg" );
 
     CAF_PDM_InitField( &m_name, "UserDescription", QString( "Intersection Name" ), "Name" );
 
@@ -569,16 +569,16 @@ void RimBoxIntersection::updateVisibility()
     else if ( m_singlePlaneState == PLANE_STATE_Y )
     {
         m_maxYCoord.uiCapability()->setUiReadOnly( true );
-        setUiIconFromResourceString( QString( ":/IntersectionYPlane16x16.png" ) );
+        setUiIconFromResourceString( QString( ":/IntersectionYPlane16x16.svg" ) );
     }
     else if ( m_singlePlaneState == PLANE_STATE_Z )
     {
         m_maxDepth.uiCapability()->setUiReadOnly( true );
-        setUiIconFromResourceString( QString( ":/IntersectionZPlane16x16.png" ) );
+        setUiIconFromResourceString( QString( ":/IntersectionZPlane16x16.svg" ) );
     }
     else
     {
-        setUiIconFromResourceString( QString( ":/IntersectionBox16x16.png" ) );
+        setUiIconFromResourceString( QString( ":/IntersectionBox16x16.svg" ) );
     }
 }
 

@@ -63,7 +63,7 @@ void RicNewPolylineIntersectionFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewPolylineIntersectionFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CrossSection16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/polyline interesction.svg" ) );
     actionToSetup->setText( "Polyline Intersection" );
 }
 

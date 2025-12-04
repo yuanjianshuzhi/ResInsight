@@ -99,7 +99,7 @@ void RicCreateDuplicateTemplateInOtherUnitSystemFeature::setupActionLook( QActio
 
     QString text = QString( "Create %1 Units Duplicate" ).arg( destinationUnit );
 
-    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.svg" ) );
 
     actionToSetup->setText( text );
 }

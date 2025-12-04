@@ -72,7 +72,7 @@ void RicAppendIntersectionBoxFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicAppendIntersectionBoxFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/IntersectionBox16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/IntersectionBox16x16.svg" ) );
     actionToSetup->setText( "New Intersection Box" );
 }
 
