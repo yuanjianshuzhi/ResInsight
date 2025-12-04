@@ -353,7 +353,7 @@ void RiuDockWidgetTools::showDockWidget( const ads::CDockManager* dockManager, c
 QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
 {
     if ( dockWidgetName == plotMainWindowPlotsTreeName() )
-        return QIcon( ":/plots.svg" );
+        return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == plotMainWindowDataSourceTreeName() )
         return QIcon( ":/data-sources.svg" );
     else if ( dockWidgetName == plotMainWindowTemplateTreeName() )
