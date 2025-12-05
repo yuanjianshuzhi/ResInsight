@@ -40,7 +40,7 @@ RimEclipseFaultColors::RimEclipseFaultColors()
     CAF_PDM_InitField( &showCustomFaultResult, "ShowCustomFaultResult", false, "Show Custom Fault Result" );
     showCustomFaultResult.uiCapability()->setUiHidden( true );
 
-    CAF_PDM_InitFieldNoDefault( &m_customFaultResultColors, "CustomResultSlot", "Custom Fault Result", ":/CellResult.png" );
+    CAF_PDM_InitFieldNoDefault( &m_customFaultResultColors, "CustomResultSlot", "Custom Fault Result", ":/CellResult.svg" );
     m_customFaultResultColors = new RimEclipseCellColors();
     m_customFaultResultColors->enableDeltaResults( true );
 }

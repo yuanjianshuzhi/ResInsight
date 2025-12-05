@@ -94,7 +94,7 @@ void RicNewMultiPlotFeature::onActionTriggered( bool isChecked )
 void RicNewMultiPlotFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Multi Plot from Selected Plots" );
-    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/MultiPlot16x16.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

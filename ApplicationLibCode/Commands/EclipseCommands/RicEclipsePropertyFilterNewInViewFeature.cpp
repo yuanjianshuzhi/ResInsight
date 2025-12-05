@@ -79,6 +79,6 @@ void RicEclipsePropertyFilterNewInViewFeature::onActionTriggered( bool isChecked
 //--------------------------------------------------------------------------------------------------
 void RicEclipsePropertyFilterNewInViewFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.svg" ) );
     actionToSetup->setText( "Property Filter" );
 }

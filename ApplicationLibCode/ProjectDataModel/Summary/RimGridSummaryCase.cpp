@@ -47,7 +47,7 @@ CAF_PDM_SOURCE_INIT( RimGridSummaryCase_obsolete, "GridSummaryCase" );
 //--------------------------------------------------------------------------------------------------
 RimGridSummaryCase_obsolete::RimGridSummaryCase_obsolete()
 {
-    CAF_PDM_InitScriptableObject( "Grid Summary Case", ":/SummaryCases16x16.png", "", "A Summary Case based on extracting grid data." );
+    CAF_PDM_InitScriptableObject( "Grid Summary Case", ":/SummaryCases16x16.svg", "", "A Summary Case based on extracting grid data." );
     CAF_PDM_InitFieldNoDefault( &m_eclipseCase, "Associated3DCase", "Eclipse Case" );
     m_eclipseCase.uiCapability()->setUiHidden( true );
 

@@ -167,14 +167,14 @@ RimEclipseView::RimEclipseView()
     CAF_PDM_InitScriptableFieldNoDefault( &m_eclipseCase, "EclipseCase", "Eclipse Case" );
     CAF_PDM_InitFieldNoDefault( &m_caseChangeBehaviour, "CaseChangeBehaviour", "Zoom Operation When Changing Case" );
 
-    CAF_PDM_InitScriptableFieldWithScriptKeywordNoDefault( &m_cellResult, "GridCellResult", "CellResult", "Cell Result", ":/CellResult.png" );
+    CAF_PDM_InitScriptableFieldWithScriptKeywordNoDefault( &m_cellResult, "GridCellResult", "CellResult", "Cell Result", ":/CellResult.svg" );
     m_cellResult = new RimEclipseCellColors();
     m_cellResult->enableDeltaResults( true );
 
-    CAF_PDM_InitFieldNoDefault( &m_cellEdgeResult, "GridCellEdgeResult", "Cell Edge Result", ":/EdgeResult_1.png" );
+    CAF_PDM_InitFieldNoDefault( &m_cellEdgeResult, "GridCellEdgeResult", "Cell Edge Result", ":/EdgeResult_1.svg" );
     m_cellEdgeResult = new RimCellEdgeColors();
 
-    CAF_PDM_InitFieldNoDefault( &m_elementVectorResult, "ElementVectorResult", "Vector Result", ":/CellResult.png" );
+    CAF_PDM_InitFieldNoDefault( &m_elementVectorResult, "ElementVectorResult", "Vector Result", ":/CellResult.svg" );
     m_elementVectorResult = new RimElementVectorResult;
 
     CAF_PDM_InitFieldNoDefault( &m_faultResultSettings, "FaultResultSettings", "Fault Result" );

@@ -35,7 +35,7 @@ CAF_PDM_SOURCE_INIT( RimPlotTemplateFolderItem, "PlotTemplateCollection" );
 //--------------------------------------------------------------------------------------------------
 RimPlotTemplateFolderItem::RimPlotTemplateFolderItem()
 {
-    CAF_PDM_InitObject( "Plot Templates", ":/Folder.png" );
+    CAF_PDM_InitObject( "Plot Templates", ":/Folder.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_folderName, "FolderName", "Folder" );
     m_folderName.uiCapability()->setUiReadOnly( true );

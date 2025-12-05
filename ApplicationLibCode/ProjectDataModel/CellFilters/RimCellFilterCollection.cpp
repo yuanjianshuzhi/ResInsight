@@ -63,7 +63,7 @@ CAF_PDM_SOURCE_INIT( RimCellFilterCollection, "CellFilterCollection", "RimCellFi
 RimCellFilterCollection::RimCellFilterCollection()
     : filtersChanged( this )
 {
-    CAF_PDM_InitScriptableObject( "Cell Filters", ":/CellFilter.png" );
+    CAF_PDM_InitScriptableObject( "Cell Filters", ":/CellFilter.svg" );
 
     CAF_PDM_InitScriptableField( &m_isActive, "Active", true, "Active" );
     m_isActive.uiCapability()->setUiHidden( true );
@@ -142,7 +142,7 @@ void RimCellFilterCollection::appendMenuItems( caf::CmdFeatureMenuBuilder& menuB
     menuBuilder << "RicPasteCellFiltersFeature";
     menuBuilder << "Separator";
 
-    menuBuilder.subMenuStart( "Polygon Filter", QIcon( ":/CellFilter_Polygon.png" ) );
+    menuBuilder.subMenuStart( "Polygon Filter", QIcon( ":/CellFilter_Polygon.svg" ) );
     {
         auto polygonCollection = RimTools::polygonCollection();
         for ( auto p : polygonCollection->allPolygons() )

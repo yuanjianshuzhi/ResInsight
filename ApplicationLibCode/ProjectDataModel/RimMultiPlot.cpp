@@ -48,7 +48,7 @@ RimMultiPlot::RimMultiPlot()
     : m_isValid( true )
     , m_delayPlotUpdatesDuringBatchAdd( false )
 {
-    CAF_PDM_InitObject( "Multi Plot", ":/MultiPlot16x16.png" );
+    CAF_PDM_InitObject( "Multi Plot", ":/MultiPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_projectFileVersionString, "ProjectFileVersionString", "" );
     m_projectFileVersionString.uiCapability()->setUiHidden( true );

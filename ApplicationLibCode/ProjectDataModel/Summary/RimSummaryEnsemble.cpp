@@ -1009,7 +1009,7 @@ void RimSummaryEnsemble::defineUiTreeOrdering( caf::PdmUiTreeOrdering& uiTreeOrd
 
         if ( !m_cases.empty() )
         {
-            auto subnode = uiTreeOrdering.add( "Realizations", ":/Folder.png" );
+            auto subnode = uiTreeOrdering.add( "Realizations", ":/Folder.svg" );
             for ( auto& smcase : m_cases )
             {
                 subnode->add( smcase );

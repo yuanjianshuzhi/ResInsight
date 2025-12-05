@@ -51,6 +51,6 @@ void RicIntersectionBoxZSliceFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicIntersectionBoxZSliceFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/IntersectionZPlane16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/IntersectionZPlane16x16.svg" ) );
     actionToSetup->setText( "Z-slice Intersection Box" );
 }

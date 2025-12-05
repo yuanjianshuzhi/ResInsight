@@ -103,7 +103,7 @@ const char RimWellPltPlot::PLOT_NAME_QFORMAT_STRING[] = "PLT: %1";
 RimWellPltPlot::RimWellPltPlot()
     : RimWellLogPlot()
 {
-    CAF_PDM_InitObject( "Well Allocation Plot", ":/WellFlowPlot16x16.png" );
+    CAF_PDM_InitObject( "Well Allocation Plot", ":/WellFlowPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_wellLogPlot_OBSOLETE, "WellLog", "WellLog" );
     m_wellLogPlot_OBSOLETE.xmlCapability()->setIOWritable( false );

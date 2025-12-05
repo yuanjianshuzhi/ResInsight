@@ -29,7 +29,7 @@ CAF_PDM_SOURCE_INIT( RimEclipseResultAddressCollection, "RimEclipseResultAddress
 //--------------------------------------------------------------------------------------------------
 RimEclipseResultAddressCollection::RimEclipseResultAddressCollection()
 {
-    CAF_PDM_InitObject( "Folder", ":/Folder.png", "", "" );
+    CAF_PDM_InitObject( "Folder", ":/Folder.svg", "", "" );
 
     CAF_PDM_InitFieldNoDefault( &m_adresses, "Addresses", "Addresses" );
 

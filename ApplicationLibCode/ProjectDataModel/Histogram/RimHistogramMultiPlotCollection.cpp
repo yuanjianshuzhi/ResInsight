@@ -32,7 +32,7 @@ CAF_PDM_SOURCE_INIT( RimHistogramMultiPlotCollection, "RimHistogramMultiPlotColl
 //--------------------------------------------------------------------------------------------------
 RimHistogramMultiPlotCollection::RimHistogramMultiPlotCollection()
 {
-    CAF_PDM_InitObject( "Histogram Plots", ":/MultiPlot16x16.png" );
+    CAF_PDM_InitObject( "Histogram Plots", ":/HistogramPlots.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_histogramMultiPlots, "HistogramMultiPlots", "Histogram Plots" );
 }

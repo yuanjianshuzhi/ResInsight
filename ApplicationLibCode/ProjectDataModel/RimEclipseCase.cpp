@@ -91,7 +91,7 @@ CAF_PDM_XML_ABSTRACT_SOURCE_INIT( RimEclipseCase, "RimReservoir" );
 //--------------------------------------------------------------------------------------------------
 RimEclipseCase::RimEclipseCase()
 {
-    CAF_PDM_InitScriptableObjectWithNameAndComment( "EclipseCase", ":/Case48x48.png", "", "", "Reservoir", "Abstract base class for Eclipse Cases" );
+    CAF_PDM_InitScriptableObjectWithNameAndComment( "EclipseCase", ":/Case48x48.svg", "", "", "Reservoir", "Abstract base class for Eclipse Cases" );
 
     CAF_PDM_InitFieldNoDefault( &m_reservoirViews_OBSOLETE, "ReservoirViews", "Views", "", "", "", "All Eclipse Views in the case" );
 

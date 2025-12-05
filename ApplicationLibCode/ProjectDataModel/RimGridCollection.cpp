@@ -48,7 +48,7 @@ CAF_PDM_SOURCE_INIT( RimGridInfo, "GridInfo" );
 //--------------------------------------------------------------------------------------------------
 RimGridInfo::RimGridInfo()
 {
-    CAF_PDM_InitObject( "GridInfo", ":/draw_style_meshlines_24x24.png" );
+    CAF_PDM_InitObject( "GridInfo", ":/draw_style_meshlines_24x24.svg" );
 
     CAF_PDM_InitField( &m_isActive, "IsActive", true, "Show Grid Cells" );
     CAF_PDM_InitField( &m_gridName, "GridName", QString(), "Grid Name" );
@@ -151,7 +151,7 @@ CAF_PDM_SOURCE_INIT( RimGridInfoCollection, "GridInfoCollection" );
 //--------------------------------------------------------------------------------------------------
 RimGridInfoCollection::RimGridInfoCollection()
 {
-    CAF_PDM_InitObject( "GridInfoCollection", ":/draw_style_meshlines_24x24.png" );
+    CAF_PDM_InitObject( "GridInfoCollection", ":/draw_style_meshlines_24x24.svg" );
 
     CAF_PDM_InitField( &m_isActive, "IsActive", true, "Show Grid Cells" );
     m_isActive.uiCapability()->setUiHidden( true );
@@ -245,7 +245,7 @@ CAF_PDM_SOURCE_INIT( RimGridCollection, "GridCollection" );
 //--------------------------------------------------------------------------------------------------
 RimGridCollection::RimGridCollection()
 {
-    CAF_PDM_InitObject( "Grids", ":/draw_style_meshlines_24x24.png" );
+    CAF_PDM_InitObject( "Grids", ":/draw_style_meshlines_24x24.svg" );
 
     CAF_PDM_InitField( &m_isActive, "IsActive", true, "Show Grid Cells" );
     m_isActive.uiCapability()->setUiHidden( true );
@@ -254,7 +254,7 @@ RimGridCollection::RimGridCollection()
     m_mainGrid = new RimGridInfo();
     m_mainGrid->setUiName( "Main Grid" );
     m_mainGrid->uiCapability()->setUiTreeHidden( true );
-    m_mainGrid->setUiIconFromResourceString( ":/MainGrid16x16.png" );
+    m_mainGrid->setUiIconFromResourceString( ":/MainGrid16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_persistentLgrs, "PersistentLgrs", "Persistent LGRs" );
     m_persistentLgrs = new RimGridInfoCollection();

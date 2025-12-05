@@ -81,7 +81,7 @@ void AppEnum<RimWellAllocationPlot::FlowType>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimWellAllocationPlot::RimWellAllocationPlot()
 {
-    CAF_PDM_InitObject( "Well Allocation Plot", ":/WellAllocPlot16x16.png" );
+    CAF_PDM_InitObject( "Well Allocation Plot", ":/WellAllocPlot16x16.svg" );
 
     CAF_PDM_InitField( &m_userName, "PlotDescription", QString( "Flow Diagnostics Plot" ), "Name" );
     m_userName.uiCapability()->setUiReadOnly( true );
@@ -110,7 +110,7 @@ RimWellAllocationPlot::RimWellAllocationPlot()
     m_accumulatedWellFlowPlot->setDepthUnit( RiaDefines::DepthUnitType::UNIT_NONE );
     m_accumulatedWellFlowPlot->setDepthType( RiaDefines::DepthTypeEnum::CONNECTION_NUMBER );
     m_accumulatedWellFlowPlot->setLegendsVisible( false );
-    m_accumulatedWellFlowPlot->uiCapability()->setUiIconFromResourceString( ":/WellFlowPlot16x16.png" );
+    m_accumulatedWellFlowPlot->uiCapability()->setUiIconFromResourceString( ":/WellFlowPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_totalWellAllocationPlot, "TotalWellFlowPlot", "Total Well Flow" );
     m_totalWellAllocationPlot = new RimTotalWellAllocationPlot;

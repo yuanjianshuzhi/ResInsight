@@ -109,7 +109,7 @@ void RicImportSummaryCasesFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicImportSummaryCasesFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/SummaryCases16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/SummaryCases16x16.svg" ) );
     actionToSetup->setText( "Import Summary Cases Recursively" );
 }
 

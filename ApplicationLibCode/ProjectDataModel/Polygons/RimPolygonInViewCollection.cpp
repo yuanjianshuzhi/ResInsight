@@ -35,7 +35,7 @@ CAF_PDM_SOURCE_INIT( RimPolygonInViewCollection, "RimPolygonInViewCollection" );
 //--------------------------------------------------------------------------------------------------
 RimPolygonInViewCollection::RimPolygonInViewCollection()
 {
-    CAF_PDM_InitObject( "Polygons", ":/Folder.png" );
+    CAF_PDM_InitObject( "Polygons", ":/Folder.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_polygonsInView, "Polygons", "Polygons" );
     CAF_PDM_InitFieldNoDefault( &m_collectionsInView, "Collections", "Collections" );

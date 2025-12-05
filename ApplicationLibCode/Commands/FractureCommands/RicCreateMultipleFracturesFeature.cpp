@@ -259,7 +259,7 @@ void RicCreateMultipleFracturesFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicCreateMultipleFracturesFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.svg" ) );
     actionToSetup->setText( "Create Multiple Fractures" );
 }
 

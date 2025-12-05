@@ -73,7 +73,7 @@ void AppEnum<RimElementVectorResult::VectorSurfaceCrossingLocation>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimElementVectorResult::RimElementVectorResult()
 {
-    CAF_PDM_InitObject( "Flow Vector Result", ":/CellResult.png" );
+    CAF_PDM_InitObject( "Flow Vector Result", ":/CellResult.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_legendConfig, "LegendDefinition", "Color Legend" );
     m_legendConfig = new RimRegularLegendConfig();

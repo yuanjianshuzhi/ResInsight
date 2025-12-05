@@ -582,7 +582,7 @@ QList<caf::PdmOptionItemInfo> RimEclipseStatisticsCase::calculateValueOptions( c
         QList<caf::PdmOptionItemInfo> options;
 
         {
-            caf::IconProvider iconProvider( ":/Case48x48.png" );
+            caf::IconProvider iconProvider( ":/Case48x48.svg" );
             options.push_back( caf::PdmOptionItemInfo( caf::AppEnum<DataSourceType>::uiText( DataSourceType::CASE_PROPERTY ),
                                                        DataSourceType::CASE_PROPERTY,
                                                        false,

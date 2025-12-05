@@ -108,5 +108,5 @@ void RicApplyPropertyFilterAsCellResultFeature::onActionTriggered( bool isChecke
 void RicApplyPropertyFilterAsCellResultFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Apply As Cell Result" );
-    actionToSetup->setIcon( QIcon( ":/CellResult.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellResult.svg" ) );
 }

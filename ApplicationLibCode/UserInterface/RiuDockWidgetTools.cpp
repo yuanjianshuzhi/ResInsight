@@ -353,7 +353,7 @@ void RiuDockWidgetTools::showDockWidget( const ads::CDockManager* dockManager, c
 QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
 {
     if ( dockWidgetName == plotMainWindowPlotsTreeName() )
-        return QIcon( ":/plots.svg" );
+        return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == plotMainWindowDataSourceTreeName() )
         return QIcon( ":/data-sources.svg" );
     else if ( dockWidgetName == plotMainWindowTemplateTreeName() )
@@ -373,9 +373,9 @@ QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
     else if ( dockWidgetName == mainWindowPropertyEditorName() )
         return QIcon( ":/property-editor.svg" );
     else if ( dockWidgetName == mainWindowResultInfoName() )
-        return QIcon( ":/info.png" );
+        return QIcon( ":/info.svg" );
     else if ( dockWidgetName == mainWindowProcessMonitorName() )
-        return QIcon( ":/view.svg" );
+        return QIcon( ":/ProcessMonitor.svg" );
     else if ( dockWidgetName == mainWindowResultPlotName() )
         return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == mainWindowDepthPlotName() )
@@ -393,19 +393,22 @@ QIcon RiuDockWidgetTools::dockIcon( const QString dockWidgetName )
     else if ( dockWidgetName == mainWindowProjectTreeName() )
         return QIcon( ":/standard.svg" );
     else if ( dockWidgetName == mainWindowDataSourceTreeName() )
-        return QIcon( ":/Calculator.svg" );
+        return QIcon( ":/Calculator_Blue.svg" );
     else if ( dockWidgetName == mainWindowScriptsTreeName() )
         return QIcon( ":/scripts.svg" );
     else if ( dockWidgetName == mainPlotWindowName() )
         return QIcon( ":/window-management.svg" );
     else if ( dockWidgetName == main3DWindowName() )
-        return QIcon( ":/window-management.svg" );
+        return QIcon( ":/3DView16x16.svg" );
     else if ( dockWidgetName == mainWindowSeismicHistogramName() )
         return QIcon( ":/graph.svg" );
     else if ( dockWidgetName == plotMainWindowCloudTreeName() )
         return QIcon( ":/SummaryEnsemble.svg" );
     else if ( dockWidgetName == plotWindowQuickAccessName() || dockWidgetName == mainWindowQuickAccessName() )
         return QIcon( ":/pinned.svg" );
+    // new add Cell Selection Tool
+    else if ( dockWidgetName == mainWindowCellSelectionToolName() )
+        return QIcon( ":/cell-selection.svg" );
 
     return QIcon( ":/view.svg" );
 }

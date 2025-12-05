@@ -53,7 +53,7 @@ CAF_PDM_SOURCE_INIT( RimEclipseInputCase, "RimInputReservoir" );
 RimEclipseInputCase::RimEclipseInputCase()
     : RimEclipseCase()
 {
-    CAF_PDM_InitObject( "RimInputCase", ":/EclipseInput48x48.png" );
+    CAF_PDM_InitObject( "RimInputCase", ":/EclipseInput48x48.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_additionalFiles, "AdditionalFileNamesProxy", "Additional Files" );
     m_additionalFiles.registerGetMethod( this, &RimEclipseInputCase::additionalFiles );

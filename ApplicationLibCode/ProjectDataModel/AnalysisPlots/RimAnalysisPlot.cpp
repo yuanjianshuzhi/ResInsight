@@ -97,7 +97,7 @@ CAF_PDM_SOURCE_INIT( RimAnalysisPlot, "AnalysisPlot" );
 //--------------------------------------------------------------------------------------------------
 RimAnalysisPlot::RimAnalysisPlot()
 {
-    CAF_PDM_InitObject( "Analysis Plot", ":/AnalysisPlot16x16.png" );
+    CAF_PDM_InitObject( "Analysis Plot", ":/AnalysisPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_analysisPlotDataSelection, "AnalysisPlotData", "" );
     m_analysisPlotDataSelection.uiCapability()->setUiTreeChildrenHidden( true );

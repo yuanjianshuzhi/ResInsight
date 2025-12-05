@@ -27,7 +27,7 @@ CAF_PDM_ABSTRACT_SOURCE_INIT( RimWellLogFile, "WellLogFileInterface" );
 //--------------------------------------------------------------------------------------------------
 RimWellLogFile::RimWellLogFile()
 {
-    CAF_PDM_InitObject( "Well File Info", ":/LasFile16x16.png" );
+    CAF_PDM_InitObject( "Well File Info", ":/LasFile16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_fileName, "FileName", "Filename" );
     m_fileName.uiCapability()->setUiReadOnly( true );

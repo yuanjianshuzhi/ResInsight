@@ -98,7 +98,7 @@ void AppEnum<RimWellAllocationOverTimePlot::TimeStepFilterMode>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimWellAllocationOverTimePlot::RimWellAllocationOverTimePlot()
 {
-    CAF_PDM_InitObject( "Well Allocation Over Time Plot", ":/AnalysisPlot16x16.png" );
+    CAF_PDM_InitObject( "Well Allocation Over Time Plot", ":/AnalysisPlot16x16.svg" );
 
     CAF_PDM_InitField( &m_userName, "PlotDescription", QString( "Well Allocation Over Time Plot" ), "Name" );
     m_userName.uiCapability()->setUiReadOnly( true );

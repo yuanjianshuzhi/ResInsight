@@ -67,7 +67,7 @@ CAF_PDM_SOURCE_INIT( RimFlowCharacteristicsPlot, "FlowCharacteristicsPlot" );
 //--------------------------------------------------------------------------------------------------
 RimFlowCharacteristicsPlot::RimFlowCharacteristicsPlot()
 {
-    CAF_PDM_InitObject( "Flow Characteristics", ":/FlowCharPlot16x16.png" );
+    CAF_PDM_InitObject( "Flow Characteristics", ":/FlowCharPlot16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_case, "FlowCase", "Case" );
     CAF_PDM_InitFieldNoDefault( &m_flowDiagSolution, "FlowDiagSolution", "Flow Diag Solution" );

@@ -120,7 +120,7 @@ void AppEnum<RimWellConnectivityTable::RangeType>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimWellConnectivityTable::RimWellConnectivityTable()
 {
-    CAF_PDM_InitObject( "Producer/Injector Connectivity", ":/CorrelationMatrixPlot16x16.png" );
+    CAF_PDM_InitObject( "Producer/Injector Connectivity", ":/CorrelationMatrixPlot16x16.svg" );
     uiCapability()->setUiTreeChildrenHidden( true );
 
     CAF_PDM_InitFieldNoDefault( &m_case, "CurveCase", "Case" );

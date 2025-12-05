@@ -35,7 +35,7 @@ CAF_PDM_SOURCE_INIT( RimFlowPlotCollection, "FlowPlotCollection" );
 //--------------------------------------------------------------------------------------------------
 RimFlowPlotCollection::RimFlowPlotCollection()
 {
-    CAF_PDM_InitObject( "Flow Diagnostics Plots", ":/WellAllocPlots16x16.png" );
+    CAF_PDM_InitObject( "Flow Diagnostics Plots", ":/FlowDiagnosticsPlots.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_flowCharacteristicsPlot, "FlowCharacteristicsPlot", "" );
 

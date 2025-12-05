@@ -93,6 +93,6 @@ void RicImportWellLogCsvFileFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicImportWellLogCsvFileFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/LasFile16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/LasFile16x16.svg" ) );
     actionToSetup->setText( "Import Well Log From CSV" );
 }

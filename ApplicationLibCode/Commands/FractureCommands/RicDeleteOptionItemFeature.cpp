@@ -54,7 +54,7 @@ void RicDeleteOptionItemFeature::onActionTriggered( bool isChecked )
 void RicDeleteOptionItemFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Delete Option Items" );
-    // actionToSetup->setIcon(QIcon(":/FractureTemplate16x16.png"));
+    // actionToSetup->setIcon(QIcon(":/FractureTemplate16x16.svg"));
 }
 
 //--------------------------------------------------------------------------------------------------

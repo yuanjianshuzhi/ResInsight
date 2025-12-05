@@ -35,6 +35,6 @@ void RicImportRoffCaseFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicImportRoffCaseFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/EclipseInput48x48.png" ) );
+    actionToSetup->setIcon( QIcon( ":/EclipseInput48x48.svg" ) );
     actionToSetup->setText( "Import Roff Case" );
 }

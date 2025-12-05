@@ -52,5 +52,5 @@ void RicCreateGridStatisticsPlotFeature::onActionTriggered( bool isChecked )
 void RicCreateGridStatisticsPlotFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Grid Statistics Plot" );
-    actionToSetup->setIcon( QIcon( ":/statistics.png" ) );
+    actionToSetup->setIcon( QIcon( ":/statistics.svg" ) );
 }

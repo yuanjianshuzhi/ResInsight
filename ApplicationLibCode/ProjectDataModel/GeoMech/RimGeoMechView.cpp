@@ -93,7 +93,7 @@ RimGeoMechView::RimGeoMechView()
 {
     CAF_PDM_InitScriptableObject( "Geomechanical View", ":/3DViewGeoMech16x16.png", "", "The Geomechanical 3d View" );
 
-    CAF_PDM_InitFieldNoDefault( &cellResult, "GridCellResult", "Color Result", ":/CellResult.png" );
+    CAF_PDM_InitFieldNoDefault( &cellResult, "GridCellResult", "Color Result", ":/CellResult.svg" );
     cellResult = new RimGeoMechCellColors();
 
     CAF_PDM_InitFieldNoDefault( &m_tensorResults, "TensorResults", "Tensor Results" );

@@ -112,7 +112,7 @@ RiuPlotMainWindow::RiuPlotMainWindow()
     auto dockArea = dockManager()->setCentralWidget( cWidget );
     dockArea->setVisible( true );
 
-    m_toggleSelectionLinkAction = new QAction( QIcon( ":/Link3DandPlots.png" ), tr( "Link With Selection in 3D" ), this );
+    m_toggleSelectionLinkAction = new QAction( QIcon( ":/Link3DandPlots.svg" ), tr( "Link With Selection in 3D" ), this );
     m_toggleSelectionLinkAction->setToolTip( "Update wells used in plots from well selections in 3D view." );
     m_toggleSelectionLinkAction->setCheckable( true );
     m_toggleSelectionLinkAction->setChecked( m_selection3DLinkEnabled );

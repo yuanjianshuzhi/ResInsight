@@ -81,6 +81,6 @@ void RicNewRangeFilterSliceFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewRangeFilterSliceFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Range.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Range.svg" ) );
     actionToSetup->setText( m_sliceText );
 }

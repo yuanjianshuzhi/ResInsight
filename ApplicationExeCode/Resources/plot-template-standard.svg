@@ -1,84 +1,45 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-
-<svg
-   version="1.1"
-   id="Layer_1"
-   x="0px"
-   y="0px"
-   viewBox="0 0 24 24"
-   style="enable-background:new 0 0 24 24;"
-   xml:space="preserve"
-   sodipodi:docname="plot-template-standard.svg"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><defs
-   id="defs36"><rect
-     x="3.3651412"
-     y="2.1265823"
-     width="18.835443"
-     height="19.793574"
-     id="rect250" /></defs><sodipodi:namedview
-   id="namedview34"
-   pagecolor="#ffffff"
-   bordercolor="#000000"
-   borderopacity="0.25"
-   inkscape:showpageshadow="2"
-   inkscape:pageopacity="0.0"
-   inkscape:pagecheckerboard="0"
-   inkscape:deskcolor="#d1d1d1"
-   showgrid="false"
-   inkscape:zoom="42.791667"
-   inkscape:cx="5.1996105"
-   inkscape:cy="12.36222"
-   inkscape:window-width="2560"
-   inkscape:window-height="1369"
-   inkscape:window-x="-8"
-   inkscape:window-y="-8"
-   inkscape:window-maximized="1"
-   inkscape:current-layer="Layer_1" />
-<style
-   type="text/css"
-   id="style20">
-	.st0{fill:url(#SVGID_1_);stroke:#8F9090;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
-	.st1{fill:none;stroke:#8DC584;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
-</style>
-<linearGradient
-   id="SVGID_1_"
-   gradientUnits="userSpaceOnUse"
-   x1="1.1804"
-   y1="12.4846"
-   x2="22.8196"
-   y2="12.4846">
-	<stop
-   offset="1.118836e-07"
-   style="stop-color:#9D9D9C"
-   id="stop22" />
-	<stop
-   offset="0.5652"
-   style="stop-color:#CECECE"
-   id="stop24" />
-	<stop
-   offset="1"
-   style="stop-color:#5C5C5B"
-   id="stop26" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_139_38)">
+<g filter="url(#filter0_f_139_38)">
+<path d="M3.22266 11.4766C4.6416 12.7883 8.53937 14.6248 12.7789 11.4766" stroke="#016FE8" stroke-opacity="0.2" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g filter="url(#filter1_d_139_38)">
+<rect x="2.05469" y="0.773926" width="11.0145" height="11.0145" rx="0.5" fill="url(#paint0_linear_139_38)"/>
+</g>
+<path d="M4.83984 4.12231V2.9668H10.284V4.12231H8.25459V9.59561H6.86927V4.12231H4.83984Z" fill="white"/>
+<foreignObject x="5.93828" y="4.23906" width="9.8135" height="10.1637"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(0.9px);clip-path:url(#bgblur_1_139_38_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="1.8">
+<rect x="7.73828" y="6.03906" width="6.21346" height="6.56363" rx="1" fill="white" fill-opacity="0.2"/>
+<rect x="7.83828" y="6.13906" width="6.01346" height="6.36363" rx="0.9" stroke="url(#paint1_linear_139_38)" stroke-opacity="0.5" stroke-width="0.2"/>
+</g>
+<path d="M9.87354 8.55031V8.13794H11.8164V8.55031H11.0922V10.5036H10.5978V8.55031H9.87354Z" fill="white"/>
+</g>
+<defs>
+<filter id="filter0_f_139_38" x="-1.37734" y="6.87632" width="18.7564" height="10.9429" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="1.3" result="effect1_foregroundBlur_139_38"/>
+</filter>
+<filter id="filter1_d_139_38" x="0.0546875" y="-0.226074" width="15.0144" height="15.0144" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feGaussianBlur stdDeviation="1"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.8 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_139_38"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_139_38" result="shape"/>
+</filter>
+<clipPath id="bgblur_1_139_38_clip_path" transform="translate(-5.93828 -4.23906)"><rect x="7.73828" y="6.03906" width="6.21346" height="6.56363" rx="1"/>
+</clipPath><linearGradient id="paint0_linear_139_38" x1="2.09851" y1="0.773926" x2="13.1126" y2="11.7004" gradientUnits="userSpaceOnUse">
+<stop stop-color="#00B9FF"/>
+<stop offset="1" stop-color="#0045DA"/>
 </linearGradient>
-
-<path
-   class="st1"
-   d="M1.72,17.75"
-   id="path31" />
-<text
-   xml:space="preserve"
-   style="font-size:22.7244px;fill:#5F6368;stroke-width:12.9737"
-   x="4.0029178"
-   y="21.346537"
-   id="text348"
-   transform="scale(1.09047,0.91703578)"><tspan
-     sodipodi:role="line"
-     id="tspan346"
-     x="4.0029178"
-     y="21.346537"
-     style="stroke-width:12.9737">T</tspan></text></svg>
+<linearGradient id="paint1_linear_139_38" x1="7.73828" y1="6.03906" x2="11.0884" y2="9.67118" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<clipPath id="clip0_139_38">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

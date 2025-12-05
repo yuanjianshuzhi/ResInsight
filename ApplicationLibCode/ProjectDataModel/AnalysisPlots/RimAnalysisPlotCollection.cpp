@@ -33,7 +33,7 @@ CAF_PDM_SOURCE_INIT( RimAnalysisPlotCollection, "AnalysisPlotCollection" );
 //--------------------------------------------------------------------------------------------------
 RimAnalysisPlotCollection::RimAnalysisPlotCollection()
 {
-    CAF_PDM_InitObject( "Analysis Plots", ":/AnalysisPlots16x16.png" );
+    CAF_PDM_InitObject( "Analysis Plots", ":/AnalysisPlots16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_analysisPlots, "AnalysisPlots", "Analysis Plots" );
 }

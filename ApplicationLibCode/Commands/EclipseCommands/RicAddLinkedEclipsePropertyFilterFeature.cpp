@@ -65,6 +65,6 @@ void RicAddLinkedEclipsePropertyFilterFeature::onActionTriggered( bool isChecked
 //--------------------------------------------------------------------------------------------------
 void RicAddLinkedEclipsePropertyFilterFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CellFilter_Values.svg" ) );
     actionToSetup->setText( "Add Property Filter Linked to Cell Result" );
 }

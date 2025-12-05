@@ -88,5 +88,5 @@ void RicNewAnalysisPlotFeature::onActionTriggered( bool isChecked )
 void RicNewAnalysisPlotFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "New Analysis Plot" );
-    actionToSetup->setIcon( QIcon( ":/AnalysisPlot16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/AnalysisPlot16x16.svg" ) );
 }

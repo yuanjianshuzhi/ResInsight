@@ -77,6 +77,6 @@ void RicNewStimPlanModelTemplateFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicNewStimPlanModelTemplateFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/FractureTemplate16x16.svg" ) );
     actionToSetup->setText( "New StimPlan Model Template" );
 }

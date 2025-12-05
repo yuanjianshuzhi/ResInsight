@@ -114,7 +114,7 @@ RifEclipseSummaryAddressDefines::SummaryCategory RimSummaryAddressCollection::co
 //--------------------------------------------------------------------------------------------------
 RimSummaryAddressCollection::RimSummaryAddressCollection()
 {
-    CAF_PDM_InitObject( "Folder", ":/Folder.png", "", "" );
+    CAF_PDM_InitObject( "Folder", ":/Folder.svg", "", "" );
 
     CAF_PDM_InitFieldNoDefault( &m_contentType, "ContentsType", "Contents" );
     m_contentType = RimSummaryAddressCollection::CollectionContentType::NOT_DEFINED;
@@ -597,5 +597,5 @@ QString RimSummaryAddressCollection::iconResourceText() const
         default:
             break;
     }
-    return ":/Folder.png";
+    return ":/Folder.svg";
 }

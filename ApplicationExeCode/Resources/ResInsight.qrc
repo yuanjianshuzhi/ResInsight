@@ -331,6 +331,61 @@
         <file>Legend.svg</file>
         <file>ReachCircle16x16.svg</file>
         <file>PolylinesFromFile16x16.svg</file>
+        <file>themes/shared/comboBox-arrow.svg</file>
+        <file>themes/shared/checkbox-checked.svg</file>
+        <file>themes/shared/dark-collapsed.svg</file>
+        <file>Case48x48.svg</file>
+        <file>InfoBox16x16.svg</file>
+        <file>draw_style_meshlines_24x24.svg</file>
+        <file>MainGrid16x16.svg</file>
+        <file>CellResult.svg</file>
+        <file>EdgeResult_1.svg</file>
+        <file>CellFilter.svg</file>
+        <file>CellFilter_Values.svg</file>
+        <file>Erase_Streamline.svg</file>
+        <file>WellCF16x16.svg</file>
+        <file>CrossSections16x16.svg</file>
+        <file>ProcessMonitor.svg</file>
+        <file>info.svg</file>
+        <file>cell-selection.svg</file>
+        <file>IntersectionXPlane16x16.svg</file>
+        <file>WellAllocPlot16x16.svg</file>
+        <file>SummaryXPlotsLight16x16.svg</file>
+        <file>statistics.svg</file>
+        <file>MasterView16x16.svg</file>
+        <file>Calculator_Blue.svg</file>
+        <file>Folder.svg</file>
+        <file>FractureTemplate16x16.svg</file>
+        <file>CellFilter_Range.svg</file>
+        <file>CellFilter_Polygon.svg</file>
+        <file>IntersectionBox16x16.svg</file>
+        <file>IntersectionYPlane16x16.svg</file>
+        <file>IntersectionZPlane16x16.svg</file>
+        <file>Azimuth and dip intersection.svg</file>
+        <file>polyline interesction.svg</file>
+        <file>Link3DandPlots.svg</file>
+        <file>MultiPlot16x16.svg</file>
+        <file>AnalysisPlots16x16.svg</file>
+        <file>CorrelationPlots16x16.svg</file>
+        <file>CorrelationMatrixPlot16x16.svg</file>
+        <file>WellLogPlots16x16.svg</file>
+        <file>RFTPlots16x16.svg</file>
+        <file>WellAllocPlots16x16.svg</file>
+        <file>FlowDiagnosticsPlots.svg</file>
+        <file>FlowCharPlot16x16.svg</file>
+        <file>AnalysisPlot16x16.svg</file>
+        <file>WellFlowPlot16x16.svg</file>
+        <file>WellAllocPie16x16.svg</file>
+        <file>WellAllocLegend16x16.svg</file>
+        <file>TOFAccSatPlot16x16.svg</file>
+        <file>CumulativePhaseDist16x16.svg</file>
+        <file>MultiPlots.svg</file>
+        <file>StimPlanModelPlots.svg</file>
+        <file>HistogramPlots.svg</file>
+        <file>SummaryCases16x16.svg</file>
+        <file>ObservedData.svg</file>
+        <file>LasFile16x16.svg</file>
+        <file>EclipseInput48x48.svg</file>
     </qresource>
     <qresource prefix="/Shader">
         <file>fs_CellFace.glsl</file>

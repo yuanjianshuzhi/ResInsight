@@ -44,7 +44,7 @@ CAF_PDM_SOURCE_INIT( RimEmCase, "EmCase", "RimEmCase" );
 //--------------------------------------------------------------------------------------------------
 RimEmCase::RimEmCase()
 {
-    CAF_PDM_InitScriptableObject( "RimEmCase", ":/EclipseInput48x48.png" );
+    CAF_PDM_InitScriptableObject( "RimEmCase", ":/EclipseInput48x48.svg" );
 }
 
 //--------------------------------------------------------------------------------------------------

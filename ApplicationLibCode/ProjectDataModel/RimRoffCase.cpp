@@ -47,7 +47,7 @@ CAF_PDM_SOURCE_INIT( RimRoffCase, "RoffCase", "RimRoffCase" );
 RimRoffCase::RimRoffCase()
     : RimEclipseCase()
 {
-    CAF_PDM_InitScriptableObject( "RimRoffCase", ":/EclipseInput48x48.png" );
+    CAF_PDM_InitScriptableObject( "RimRoffCase", ":/EclipseInput48x48.svg" );
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -109,7 +109,7 @@ CAF_PDM_XML_ABSTRACT_SOURCE_INIT( RimFractureTemplate, "FractureTemplate", "RimF
 RimFractureTemplate::RimFractureTemplate()
     : wellPathDepthAtFractureChanged( this )
 {
-    CAF_PDM_InitScriptableObject( "Fracture Template", ":/FractureTemplate16x16.png" );
+    CAF_PDM_InitScriptableObject( "Fracture Template", ":/FractureTemplate16x16.svg" );
 
     CAF_PDM_InitField( &m_id, "Id", -1, "ID" );
     m_id.uiCapability()->setUiReadOnly( true );

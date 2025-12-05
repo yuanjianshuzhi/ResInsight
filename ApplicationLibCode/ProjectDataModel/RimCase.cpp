@@ -50,7 +50,7 @@ RimCase::RimCase()
     : settingsChanged( this )
     , m_isInActiveDestruction( false )
 {
-    CAF_PDM_InitScriptableObjectWithNameAndComment( "Case", ":/Case48x48.png", "", "", "Case", "The ResInsight base class for Cases" );
+    CAF_PDM_InitScriptableObjectWithNameAndComment( "Case", ":/Case48x48.svg", "", "", "Case", "The ResInsight base class for Cases" );
 
     CAF_PDM_InitScriptableField( &m_caseUserDescription, "Name", QString(), "Case Name" );
     m_caseUserDescription.registerKeywordAlias( "CaseUserDescription" );
@@ -73,7 +73,7 @@ RimCase::RimCase()
     m_timeStepFilter.uiCapability()->setUiTreeChildrenHidden( true );
     m_timeStepFilter = new RimTimeStepFilter;
 
-    CAF_PDM_InitFieldNoDefault( &m_2dIntersectionViewCollection, "IntersectionViewCollection", "2D Intersection Views", ":/CrossSections16x16.png" );
+    CAF_PDM_InitFieldNoDefault( &m_2dIntersectionViewCollection, "IntersectionViewCollection", "2D Intersection Views", ":/CrossSections16x16.svg" );
     m_2dIntersectionViewCollection = new Rim2dIntersectionViewCollection();
 }
 
