@@ -905,3 +905,9 @@ ThirdParty/Ert/lib/int_vector.cpp
 ThirdParty/Ert/lib/long_vector.cpp
 ThirdParty/Ert/lib/size_t_vector.cpp
 ThirdParty/Ert/lib/time_t_vector.cpp
+
+
+
+# 忽略 .github/workflows 目录下所有 .yml 和 .yaml 文件
+.github/workflows/*.yml
+.github/workflows/*.yaml
