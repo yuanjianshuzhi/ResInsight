@@ -54,7 +54,7 @@ RicExportSectorModelUi::RicExportSectorModelUi()
 
     CAF_PDM_InitFieldNoDefault( &m_exportFolder, "ExportFolder", "Export Folder" );
     CAF_PDM_InitFieldNoDefault( &m_exportDeckName, "ExportDeckName", "Sector Model Name" );
-    CAF_PDM_InitField( &m_porvMultiplier, "PorvMultiplier", 1.0, "PORV Multiplier" );
+    CAF_PDM_InitField( &m_porvMultiplier, "PorvMultiplier", 1.0e6, "PORV Multiplier" );
     CAF_PDM_InitFieldNoDefault( &m_boundaryCondition, "BoundaryCondition", "Boundary Condition Type:" );
     m_boundaryCondition.uiCapability()->setUiEditorTypeName( caf::PdmUiRadioButtonEditor::uiEditorTypeName() );
     CAF_PDM_InitFieldNoDefault( &m_gridBoxSelection, "GridBoxSelection", "Cells to Export:" );
@@ -211,8 +211,7 @@ void RicExportSectorModelUi::defineUiOrdering( QString uiConfigName, caf::PdmUiO
         simGrp->add( &m_createSimulationJob );
         if ( m_createSimulationJob() )
         {
-            if ( m_simulationJobName().isEmpty() ) m_simulationJobName = m_exportDeckName();
-            if ( m_simulationJobFolder().path().isEmpty() ) m_simulationJobFolder = defaultFolder();
+            if ( m_simulationJobName().isEmpty() ) m_simulationJobName = m_exportDeckName().trimmed();
             simGrp->add( &m_simulationJobName );
             simGrp->add( &m_simulationJobFolder );
         }
@@ -244,6 +243,9 @@ const QStringList& RicExportSectorModelUi::pageSubTitles() const
 void RicExportSectorModelUi::setEclipseView( RimEclipseView* view )
 {
     m_eclipseView = view;
+
+    if ( view->eclipseCase() != m_eclipseCase() ) m_exportDeckName = "";
+
     m_eclipseCase = view->eclipseCase();
 
     cvf::UByteArray cellVisibility;
@@ -270,9 +272,12 @@ void RicExportSectorModelUi::setEclipseView( RimEclipseView* view )
         m_bcpropKeywords.push_back( keyword );
     }
 
-    if ( ( m_eclipseCase != nullptr ) && m_exportDeckName().isEmpty() ) m_exportDeckName = m_eclipseCase->caseUserDescription();
+    if ( ( m_eclipseCase != nullptr ) && m_exportDeckName().isEmpty() )
+        m_exportDeckName = m_eclipseCase->caseUserDescription().toUpper() + +"_SECTOR";
 
     m_createSimulationJob = false;
+
+    if ( m_exportFolder().path().isEmpty() ) m_exportFolder = defaultFolder();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -458,12 +463,21 @@ void RicExportSectorModelUi::fieldChangedByUi( const caf::PdmFieldHandle* change
         applyBoundaryDefaults();
         updateConnectedEditors();
     }
-    if ( changedField == &m_visibleWellsPadding )
+    if ( changedField == &m_visibleWellsPadding || changedField == &m_minI || changedField == &m_maxI || changedField == &m_minJ ||
+         changedField == &m_maxJ || changedField == &m_minK || changedField == &m_maxK )
     {
         applyBoundaryDefaults();
     }
     else if ( ( changedField == &m_boundaryCondition ) || ( changedField == &m_refineGrid ) )
     {
+        updateConnectedEditors();
+    }
+    else if ( changedField == &m_exportFolder )
+    {
+        if ( m_simulationJobFolder().path().isEmpty() )
+        {
+            m_simulationJobFolder = m_exportFolder().path() + "/job";
+        }
         updateConnectedEditors();
     }
 }

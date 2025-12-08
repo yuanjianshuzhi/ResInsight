@@ -505,11 +505,7 @@ std::vector<QDateTime> RimOpmFlowJob::addedDateTimes()
 //--------------------------------------------------------------------------------------------------
 void RimOpmFlowJob::fieldChangedByUi( const caf::PdmFieldHandle* changedField, const QVariant& oldValue, const QVariant& newValue )
 {
-    if ( ( changedField == &m_deckFileName ) || ( changedField == &m_addToEnsemble ) )
-    {
-        m_deckName = "";
-    }
-    else if ( changedField == &m_wellPath )
+    if ( changedField == &m_wellPath )
     {
         if ( ( m_wellPath() != nullptr ) && ( m_wellPath->completionSettings() != nullptr ) )
         {
@@ -543,7 +539,6 @@ QString RimOpmFlowJob::mainWorkingDirectory() const
 //--------------------------------------------------------------------------------------------------
 void RimOpmFlowJob::setEclipseCase( RimEclipseCase* eCase )
 {
-    m_deckName = "";
     if ( eCase == nullptr )
     {
         m_deckFileName.setValue( QString() );
@@ -563,7 +558,6 @@ void RimOpmFlowJob::setEclipseCase( RimEclipseCase* eCase )
 //--------------------------------------------------------------------------------------------------
 void RimOpmFlowJob::setInputDataFile( QString filename )
 {
-    m_deckName = "";
     m_deckFileName.setValue( filename );
     closeDeckFile();
     openDeckFile();
@@ -653,16 +647,13 @@ QString RimOpmFlowJob::workingDirectory() const
 //--------------------------------------------------------------------------------------------------
 QString RimOpmFlowJob::deckName()
 {
-    if ( m_deckName.isEmpty() )
+    auto deckName = baseDeckName();
+    if ( m_addToEnsemble() )
     {
-        m_deckName = baseDeckName();
-        if ( m_addToEnsemble() )
-        {
-            m_deckName = m_deckName + "-" + QString::number( m_currentRunId() );
-        }
+        deckName = deckName + "-" + QString::number( m_currentRunId() );
     }
 
-    return m_deckName;
+    return deckName;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -670,13 +661,10 @@ QString RimOpmFlowJob::deckName()
 //--------------------------------------------------------------------------------------------------
 QString RimOpmFlowJob::baseDeckName()
 {
-    if ( m_deckName.isEmpty() )
-    {
-        m_deckName = name();
-        m_deckName.replace( ' ', '_' );
-        m_deckName = m_deckName.toUpper();
-    }
-    return m_deckName;
+    auto baseName = name();
+    baseName.replace( ' ', '_' );
+    baseName = baseName.toUpper();
+    return baseName;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -969,7 +957,6 @@ void RimOpmFlowJob::onCompleted( bool success )
         }
 
         m_currentRunId = m_currentRunId + 1;
-        m_deckName     = "";
     }
     else
     {
@@ -1030,9 +1017,21 @@ int RimOpmFlowJob::mergeBasicWellSettings()
 {
     const int failure = -1;
 
+    if ( m_eclipseCase() == nullptr || m_wellPath() == nullptr || m_wellPath()->completionSettings() == nullptr ||
+         m_eclipseCase()->eclipseCaseData() == nullptr )
+    {
+        RiaLogging::error( "Cannot create COMPDAT keyword - check case, wellpath and completion settings data." );
+        return failure;
+    }
+
+    auto compdata = RicWellPathExportCompletionDataFeatureImpl::completionDataForWellPath( m_wellPath(), m_eclipseCase() );
+    auto wellName = m_wellPath()->completionSettings()->wellNameForExport().toStdString();
+
     int mergePosition = m_openWellDeckPosition();
 
-    auto compdatKw  = RimKeywordFactory::compdatKeyword( m_eclipseCase(), m_wellPath() );
+    auto compdatKw  = RimKeywordFactory::compdatKeyword( compdata, wellName );
+    auto wpimultKw  = RimKeywordFactory::wpimultKeyword( compdata, wellName );
+    auto complumpKw = RimKeywordFactory::complumpKeyword( compdata, wellName );
     auto welspecsKw = RimKeywordFactory::welspecsKeyword( m_wellGroupName().toStdString(), m_eclipseCase(), m_wellPath() );
 
     if ( welspecsKw.empty() || compdatKw.empty() )
@@ -1044,6 +1043,14 @@ int RimOpmFlowJob::mergeBasicWellSettings()
     if ( m_wellOpenType == WellOpenType::OPEN_AT_DATE )
     {
         // reverse order for correct insertion order
+        if ( !complumpKw.empty() )
+        {
+            if ( !m_deckFile->mergeKeywordAtTimeStep( m_openTimeStep(), complumpKw ) ) return failure;
+        }
+        if ( !wpimultKw.empty() )
+        {
+            if ( !m_deckFile->mergeKeywordAtTimeStep( m_openTimeStep(), wpimultKw ) ) return failure;
+        }
         if ( !m_deckFile->mergeKeywordAtTimeStep( m_openTimeStep(), compdatKw ) ) return failure;
         if ( !m_deckFile->mergeKeywordAtTimeStep( m_openTimeStep(), welspecsKw ) ) return failure;
         mergePosition = 0;
@@ -1054,6 +1061,16 @@ int RimOpmFlowJob::mergeBasicWellSettings()
         if ( mergePosition < 0 ) return failure;
         mergePosition = m_deckFile->mergeKeywordAtPosition( mergePosition, compdatKw );
         if ( mergePosition < 0 ) return failure;
+        if ( !wpimultKw.empty() )
+        {
+            mergePosition = m_deckFile->mergeKeywordAtPosition( mergePosition, wpimultKw );
+            if ( mergePosition < 0 ) return failure;
+        }
+        if ( !complumpKw.empty() )
+        {
+            mergePosition = m_deckFile->mergeKeywordAtPosition( mergePosition, complumpKw );
+            if ( mergePosition < 0 ) return failure;
+        }
     }
 
     // increase wells and connections in welldims to make sure they are big enough
