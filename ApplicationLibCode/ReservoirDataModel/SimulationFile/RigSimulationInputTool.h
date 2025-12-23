@@ -25,6 +25,7 @@
 #include <QString>
 
 #include <expected>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,7 @@ class RimEclipseCase;
 class RigSimulationInputSettings;
 class RifOpmFlowDeckFile;
 class RigSimWellData;
+class RigBoundingBoxIjk;
 
 namespace Opm
 {
@@ -54,6 +56,21 @@ public:
     static std::expected<Opm::DeckRecord, QString>
         processEqualsRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
 
+    static std::expected<Opm::DeckRecord, QString>
+        processMultiplyRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
+
+    static std::expected<Opm::DeckRecord, QString>
+        processBoxRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
+
+    static std::expected<Opm::DeckRecord, QString>
+        processCopyRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
+
+    static std::expected<Opm::DeckRecord, QString>
+        processAddRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
+
+    static std::expected<Opm::DeckRecord, QString>
+        processAquconRecord( const Opm::DeckRecord& record, const caf::VecIjk0& min, const caf::VecIjk0& max, const cvf::Vec3st& refinement );
+
 private:
     static std::expected<void, QString> updateCornerPointGridInDeckFile( RimEclipseCase*                   eclipseCase,
                                                                          const RigSimulationInputSettings& settings,
@@ -71,6 +88,21 @@ private:
 
     static std::expected<void, QString>
         replaceEqualsKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
+
+    static std::expected<void, QString>
+        replaceMultiplyKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
+
+    static std::expected<void, QString>
+        replaceBoxKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
+
+    static std::expected<void, QString>
+        replaceCopyKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
+
+    static std::expected<void, QString>
+        replaceAddKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
+
+    static std::expected<void, QString>
+        replaceAquconKeywordIndices( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
 
     static std::expected<void, QString>
         addFaultsToDeckFile( RimEclipseCase* eclipseCase, const RigSimulationInputSettings& settings, RifOpmFlowDeckFile& deckFile );
@@ -96,4 +128,23 @@ private:
                                                                           const std::string&                wellName,
                                                                           bool                              isWellNameRecord,
                                                                           const RigSimulationInputSettings& settings );
+
+    // Generic helper for processing keywords with box indices
+    using RecordProcessorFunc =
+        std::function<std::expected<Opm::DeckRecord, QString>( const Opm::DeckRecord&, const caf::VecIjk0&, const caf::VecIjk0&, const cvf::Vec3st& )>;
+
+    static std::expected<void, QString> replaceKeywordWithBoxIndices( const std::string&                keywordName,
+                                                                      RimEclipseCase*                   eclipseCase,
+                                                                      const RigSimulationInputSettings& settings,
+                                                                      RifOpmFlowDeckFile&               deckFile,
+                                                                      RecordProcessorFunc               processorFunc );
+
+    // Helper function to transform bounding box from global to sector coordinates
+    // Returns bounding box with 0-based sector-relative coordinates
+    static std::expected<RigBoundingBoxIjk, QString> transformBoxToSectorCoordinates( const RigBoundingBoxIjk& inputBox,
+                                                                                      const caf::VecIjk0&      sectorMin,
+                                                                                      const caf::VecIjk0&      sectorMax,
+                                                                                      const cvf::Vec3st&       refinement,
+                                                                                      const QString&           keywordName,
+                                                                                      const QString&           recordIdentifier );
 };

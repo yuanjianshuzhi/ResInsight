@@ -179,14 +179,10 @@ TEST( RigSimulationInputTool, ProcessEqualsRecord_InvalidRecord )
     caf::VecIjk0 sectorMax( 9, 9, 9 );
     cvf::Vec3st  refinement( 1, 1, 1 );
 
-    // Create a record with only 5 items (insufficient)
+    // Create a record with only 1 item (field name, missing value)
     std::vector<Opm::DeckItem> items;
     items.push_back( RifOpmDeckTools::item( "FIELD", std::string( "FIPNUM" ) ) );
-    items.push_back( RifOpmDeckTools::item( "VALUE", 1 ) );
-    items.push_back( RifOpmDeckTools::item( "I1", 1 ) );
-    items.push_back( RifOpmDeckTools::item( "I2", 10 ) );
-    items.push_back( RifOpmDeckTools::item( "J1", 1 ) );
-    // Missing J2, K1, K2
+    // Missing VALUE and box coordinates
 
     Opm::DeckRecord record{ std::move( items ) };
 
@@ -194,6 +190,30 @@ TEST( RigSimulationInputTool, ProcessEqualsRecord_InvalidRecord )
 
     EXPECT_FALSE( result.has_value() );
     EXPECT_TRUE( result.error().contains( "insufficient items" ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test EQUALS record without box definition (only field and value)
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessEqualsRecord_NoBoxDefinition )
+{
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 9, 9, 9 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // Create a record with only field name and value (no box coordinates)
+    std::vector<Opm::DeckItem> items;
+    items.push_back( RifOpmDeckTools::item( "FIELD", std::string( "FIPNUM" ) ) );
+    items.push_back( RifOpmDeckTools::item( "VALUE", 1 ) );
+
+    Opm::DeckRecord record{ std::move( items ) };
+
+    auto result = RigSimulationInputTool::processEqualsRecord( record, sectorMin, sectorMax, refinement );
+
+    EXPECT_TRUE( result.has_value() );
+    EXPECT_EQ( result->size(), 2U );
+    EXPECT_EQ( result->getItem( 0 ).get<std::string>( 0 ), "FIPNUM" );
+    EXPECT_EQ( result->getItem( 1 ).get<int>( 0 ), 1 );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -222,6 +242,126 @@ TEST( RigSimulationInputTool, ProcessEqualsRecord_AtBoundary )
     EXPECT_EQ( 10, result->getItem( 5 ).get<int>( 0 ) ); // J2
     EXPECT_EQ( 1, result->getItem( 6 ).get<int>( 0 ) ); // K1
     EXPECT_EQ( 10, result->getItem( 7 ).get<int>( 0 ) ); // K2
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Helper to create an AQUCON DeckRecord
+/// AQUCON format: ID I1 I2 J1 J2 K1 K2 CONNECT_FACE ... (1-based Eclipse coordinates)
+//--------------------------------------------------------------------------------------------------
+static Opm::DeckRecord createAquconRecord( int aquiferId, int i1, int i2, int j1, int j2, int k1, int k2, const std::string& connectFace )
+{
+    std::vector<Opm::DeckItem> items;
+    items.push_back( RifOpmDeckTools::item( "ID", aquiferId ) );
+    items.push_back( RifOpmDeckTools::item( "I1", i1 ) );
+    items.push_back( RifOpmDeckTools::item( "I2", i2 ) );
+    items.push_back( RifOpmDeckTools::item( "J1", j1 ) );
+    items.push_back( RifOpmDeckTools::item( "J2", j2 ) );
+    items.push_back( RifOpmDeckTools::item( "K1", k1 ) );
+    items.push_back( RifOpmDeckTools::item( "K2", k2 ) );
+    items.push_back( RifOpmDeckTools::item( "CONNECT_FACE", connectFace ) );
+
+    return Opm::DeckRecord{ std::move( items ) };
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test AQUCON record with partial overlap (based on user-provided data)
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessAquconRecord_PartialOverlap )
+{
+    // Sector: min=(40, 27, 21), max=(100, 72, 58) (inclusive, 0-based)
+    // This corresponds to a sector with cells [40-100, 27-72, 21-58]
+    caf::VecIjk0 sectorMin( 40, 27, 21 );
+    caf::VecIjk0 sectorMax( 100, 72, 58 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // AQUCON record from user data: 1 57 57 28 36 46 58 'I+' (1-based Eclipse)
+    // Converts to 0-based: I[56-56], J[27-35], K[45-57]
+    // Sector is I[40-100], J[27-72], K[21-58]
+    // Overlap: I[56-56], J[27-35], K[45-57] - all inside, no clamping needed
+    auto record = createAquconRecord( 1, 57, 57, 28, 36, 46, 58, "I+" );
+
+    auto result = RigSimulationInputTool::processAquconRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // Check transformed coordinates (sector-relative, 1-based)
+    // I: (56-40)*1+1 = 17 to (56-40)*1+1 = 17
+    // J: (27-27)*1+1 = 1 to (35-27)*1+1 = 9
+    // K: (45-21)*1+1 = 25 to (57-21)*1+1 = 37
+    EXPECT_EQ( 17, result->getItem( 1 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 17, result->getItem( 2 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 1, result->getItem( 3 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 9, result->getItem( 4 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 25, result->getItem( 5 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 37, result->getItem( 6 ).get<int>( 0 ) ); // K2
+
+    // Check aquifer ID and connect face are preserved
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) );
+    EXPECT_EQ( "I+", result->getItem( 7 ).get<std::string>( 0 ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test AQUCON record with partial K overlap requiring clamping
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessAquconRecord_PartialOverlapWithClamping )
+{
+    // Sector: min=(40, 27, 21), max=(100, 72, 58) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 40, 27, 21 );
+    caf::VecIjk0 sectorMax( 100, 72, 58 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // AQUCON record: 1 79 79 41 67 5 11 'I+' (1-based Eclipse)
+    // Converts to 0-based: I[78-78], J[40-66], K[4-10]
+    // Sector K is [21-58], so K[4-10] is outside and should be skipped
+    auto record = createAquconRecord( 1, 79, 79, 41, 67, 5, 11, "I+" );
+
+    auto result = RigSimulationInputTool::processAquconRecord( record, sectorMin, sectorMax, refinement );
+
+    // This should fail because K range [4-10] doesn't overlap with sector K range [21-58]
+    EXPECT_FALSE( result.has_value() );
+    EXPECT_TRUE( result.error().contains( "does not overlap" ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test AQUCON record completely inside sector
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessAquconRecord_CompletelyInside )
+{
+    // Sector: min=(40, 27, 21), max=(100, 72, 58) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 40, 27, 21 );
+    caf::VecIjk0 sectorMax( 100, 72, 58 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // AQUCON record: 1 61 61 48 72 12 17 'I+' (1-based Eclipse)
+    // Converts to 0-based: I[60-60], J[47-71], K[11-16]
+    // However, K[11-16] is outside sector K[21-58], so this should fail
+    auto record = createAquconRecord( 1, 61, 61, 48, 72, 12, 17, "I+" );
+
+    auto result = RigSimulationInputTool::processAquconRecord( record, sectorMin, sectorMax, refinement );
+
+    EXPECT_FALSE( result.has_value() );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test AQUCON record without box definition (only aquifer ID)
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessAquconRecord_NoBoxDefinition )
+{
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 9, 9, 9 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // Create a record with only aquifer ID (no box coordinates)
+    std::vector<Opm::DeckItem> items;
+    items.push_back( RifOpmDeckTools::item( "ID", 1 ) );
+
+    Opm::DeckRecord record{ std::move( items ) };
+
+    auto result = RigSimulationInputTool::processAquconRecord( record, sectorMin, sectorMax, refinement );
+
+    EXPECT_TRUE( result.has_value() );
+    EXPECT_EQ( result->size(), 1U );
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -412,6 +552,230 @@ TEST( RigSimulationInputTool, ExportModel5WithBcconBcprop )
     // Verify dimensions are correct for the sector (10x10x6)
     // Min (5,5,2) to Max (14,14,7) means 10 cells in I, 10 cells in J, 6 cells in K
     EXPECT_TRUE( fileContent.contains( " 10 10 6 /" ) ) << "File does not contain expected sector dimensions 10 10 6";
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Helper to create a BOX DeckRecord
+/// BOX format: I1 I2 J1 J2 K1 K2 (1-based Eclipse coordinates)
+//--------------------------------------------------------------------------------------------------
+static Opm::DeckRecord createBoxRecord( int i1, int i2, int j1, int j2, int k1, int k2 )
+{
+    std::vector<Opm::DeckItem> items;
+    items.push_back( RifOpmDeckTools::item( "I1", i1 ) );
+    items.push_back( RifOpmDeckTools::item( "I2", i2 ) );
+    items.push_back( RifOpmDeckTools::item( "J1", j1 ) );
+    items.push_back( RifOpmDeckTools::item( "J2", j2 ) );
+    items.push_back( RifOpmDeckTools::item( "K1", k1 ) );
+    items.push_back( RifOpmDeckTools::item( "K2", k2 ) );
+
+    return Opm::DeckRecord{ std::move( items ) };
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record with user-provided dimensions
+/// BOX 1 46 1 112 1 22
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_LargeBox )
+{
+    // Sector: min=(0, 0, 0), max=(45, 111, 21) (inclusive, 0-based)
+    // This means the sector spans exactly the same range as the BOX keyword
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 45, 111, 21 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // BOX record: 1 46 1 112 1 22 (1-based Eclipse)
+    // Converts to 0-based: I[0-45], J[0-111], K[0-21]
+    auto record = createBoxRecord( 1, 46, 1, 112, 1, 22 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // Check transformed coordinates (should span entire sector, 1-based)
+    // I: (0-0)*1+1 = 1 to (45-0)*1+1 = 46
+    // J: (0-0)*1+1 = 1 to (111-0)*1+1 = 112
+    // K: (0-0)*1+1 = 1 to (21-0)*1+1 = 22
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 46, result->getItem( 1 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 1, result->getItem( 2 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 112, result->getItem( 3 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 1, result->getItem( 4 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 22, result->getItem( 5 ).get<int>( 0 ) ); // K2
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record with refinement (3, 3, 1) and sector offset
+/// BOX 1 46 1 112 1 22
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_LargeBoxWithRefinement )
+{
+    // Sector: min=(19, 59, 0), max=(45, 111, 21) (inclusive, 0-based)
+    // BOX will be clamped to this sector and then refined
+    caf::VecIjk0 sectorMin( 19, 59, 0 );
+    caf::VecIjk0 sectorMax( 45, 111, 21 );
+    cvf::Vec3st  refinement( 3, 3, 1 ); // Refinement: I=3, J=3, K=1
+
+    // BOX record: 1 46 1 112 1 22 (1-based Eclipse)
+    // Converts to 0-based: I[0-45], J[0-111], K[0-21]
+    // After clamping to sector: I[19-45], J[59-111], K[0-21]
+    auto record = createBoxRecord( 1, 46, 1, 112, 1, 22 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // Check transformed coordinates with refinement (1-based)
+    // After clamping: I[19-45], J[59-111], K[0-21] (0-based)
+    // Relative to sector min (19, 59, 0): I[0-26], J[0-52], K[0-21]
+    // This gives us: 27 cells in I, 53 cells in J, 22 cells in K
+    //
+    // With refinement (3, 3, 1):
+    // - I: 27 cells * 3 = 81 refined cells, 0-based [0-80], 1-based [1-81]
+    // - J: 53 cells * 3 = 159 refined cells, 0-based [0-158], 1-based [1-159]
+    // - K: 22 cells * 1 = 22 refined cells, 0-based [0-21], 1-based [1-22]
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 81, result->getItem( 1 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 1, result->getItem( 2 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 159, result->getItem( 3 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 1, result->getItem( 4 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 22, result->getItem( 5 ).get<int>( 0 ) ); // K2
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record with partial overlap requiring clamping
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_PartialOverlapWithClamping )
+{
+    // Sector: min=(10, 20, 5), max=(39, 99, 19) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 10, 20, 5 );
+    caf::VecIjk0 sectorMax( 39, 99, 19 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // BOX record: 1 46 1 112 1 22 (1-based Eclipse)
+    // Converts to 0-based: I[0-45], J[0-111], K[0-21]
+    // Sector: I[10-39], J[20-99], K[5-19]
+    // Intersection (clamped): I[10-39], J[20-99], K[5-19]
+    auto record = createBoxRecord( 1, 46, 1, 112, 1, 22 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // Check transformed coordinates (sector-relative, 1-based)
+    // After clamping: I[10-39], J[20-99], K[5-19] (0-based)
+    // Transformed to sector-relative (min at 10,20,5):
+    //   I: (10-10)*1+1 = 1 to (39-10)*1+1 = 30
+    //   J: (20-20)*1+1 = 1 to (99-20)*1+1 = 80
+    //   K: (5-5)*1+1 = 1 to (19-5)*1+1 = 15
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 30, result->getItem( 1 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 1, result->getItem( 2 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 80, result->getItem( 3 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 1, result->getItem( 4 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 15, result->getItem( 5 ).get<int>( 0 ) ); // K2
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record completely inside sector (no clamping)
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_CompletelyInside )
+{
+    // Sector: min=(0, 0, 0), max=(49, 119, 29) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 49, 119, 29 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // BOX record: 5 20 10 50 5 15 (1-based Eclipse)
+    // Converts to 0-based: I[4-19], J[9-49], K[4-14]
+    // All inside sector, no clamping needed
+    auto record = createBoxRecord( 5, 20, 10, 50, 5, 15 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // No clamping, direct transformation (sector min is 0,0,0)
+    // I: (4-0)*1+1 = 5 to (19-0)*1+1 = 20
+    // J: (9-0)*1+1 = 10 to (49-0)*1+1 = 50
+    // K: (4-0)*1+1 = 5 to (14-0)*1+1 = 15
+    EXPECT_EQ( 5, result->getItem( 0 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 20, result->getItem( 1 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 10, result->getItem( 2 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 50, result->getItem( 3 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 5, result->getItem( 4 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 15, result->getItem( 5 ).get<int>( 0 ) ); // K2
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record with no overlap - should return error
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_NoOverlap )
+{
+    // Sector: min=(0, 0, 0), max=(19, 29, 9) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 19, 29, 9 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // BOX record: 30 50 40 60 1 10 (1-based Eclipse)
+    // Converts to 0-based: I[29-49], J[39-59], K[0-9]
+    // No overlap in I and J dimensions with sector
+    auto record = createBoxRecord( 30, 50, 40, 60, 1, 10 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    EXPECT_FALSE( result.has_value() );
+    EXPECT_TRUE( result.error().contains( "does not overlap" ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test invalid BOX record (insufficient items)
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_InvalidRecord )
+{
+    caf::VecIjk0 sectorMin( 0, 0, 0 );
+    caf::VecIjk0 sectorMax( 9, 9, 9 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // Create a record with only 3 items (missing J2, K1, K2)
+    std::vector<Opm::DeckItem> items;
+    items.push_back( RifOpmDeckTools::item( "I1", 1 ) );
+    items.push_back( RifOpmDeckTools::item( "I2", 5 ) );
+    items.push_back( RifOpmDeckTools::item( "J1", 1 ) );
+
+    Opm::DeckRecord record{ std::move( items ) };
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    EXPECT_FALSE( result.has_value() );
+    EXPECT_TRUE( result.error().contains( "insufficient items" ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+/// Test BOX record at sector boundary
+//--------------------------------------------------------------------------------------------------
+TEST( RigSimulationInputTool, ProcessBoxRecord_AtBoundary )
+{
+    // Sector: min=(5, 10, 3), max=(24, 39, 12) (inclusive, 0-based)
+    caf::VecIjk0 sectorMin( 5, 10, 3 );
+    caf::VecIjk0 sectorMax( 24, 39, 12 );
+    cvf::Vec3st  refinement( 1, 1, 1 );
+
+    // BOX record exactly matching sector: 6 25 11 40 4 13 (1-based Eclipse)
+    // Converts to 0-based: I[5-24], J[10-39], K[3-12]
+    auto record = createBoxRecord( 6, 25, 11, 40, 4, 13 );
+
+    auto result = RigSimulationInputTool::processBoxRecord( record, sectorMin, sectorMax, refinement );
+
+    ASSERT_TRUE( result.has_value() );
+
+    // Should span entire sector in all dimensions
+    // Transformed: (5-5)*1+1 = 1 to (24-5)*1+1 = 20
+    EXPECT_EQ( 1, result->getItem( 0 ).get<int>( 0 ) ); // I1
+    EXPECT_EQ( 20, result->getItem( 1 ).get<int>( 0 ) ); // I2
+    EXPECT_EQ( 1, result->getItem( 2 ).get<int>( 0 ) ); // J1
+    EXPECT_EQ( 30, result->getItem( 3 ).get<int>( 0 ) ); // J2
+    EXPECT_EQ( 1, result->getItem( 4 ).get<int>( 0 ) ); // K1
+    EXPECT_EQ( 10, result->getItem( 5 ).get<int>( 0 ) ); // K2
 }
 
 //--------------------------------------------------------------------------------------------------
