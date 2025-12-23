@@ -27,6 +27,7 @@
 #include <QStringList>
 #include <QTabWidget>
 #include <QWidget>
+#include <QPushbutton>
 
 //--------------------------------------------------------------------------------------------------
 ///
