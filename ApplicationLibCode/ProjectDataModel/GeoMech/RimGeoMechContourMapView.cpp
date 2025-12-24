@@ -51,7 +51,7 @@ RimGeoMechContourMapView::RimGeoMechContourMapView()
     : m_cameraPositionLastUpdate( cvf::Vec3d::UNDEFINED )
 {
     CAF_PDM_InitScriptableObjectWithNameAndComment( "GeoMech Contour Map View",
-                                                    ":/2DMap16x16.png",
+                                                    ":/2DMap16x16.svg",
                                                     "",
                                                     "",
                                                     "GeoMechContourMap",

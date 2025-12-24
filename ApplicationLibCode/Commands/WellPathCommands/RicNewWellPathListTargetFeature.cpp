@@ -181,11 +181,11 @@ void RicNewWellPathListTargetFeature::setupActionLook( QAction* actionToSetup )
         if ( !afterBeforePair.first )
         {
             actionToSetup->setText( "Insert New Target At Sea Level" );
-            actionToSetup->setIcon( QIcon( ":/WellTargets.png" ) );
+            actionToSetup->setIcon( QIcon( ":/WellTargets.svg" ) );
             return;
         }
     }
 
     actionToSetup->setText( "Insert New Target Above" );
-    actionToSetup->setIcon( QIcon( ":/WellTargets.png" ) );
+    actionToSetup->setIcon( QIcon( ":/WellTargets.svg" ) );
 }

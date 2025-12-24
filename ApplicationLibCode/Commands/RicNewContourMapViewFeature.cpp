@@ -200,7 +200,7 @@ void RicNewContourMapViewFeature::setupActionLook( QAction* actionToSetup )
     {
         actionToSetup->setText( "New Contour Map" );
     }
-    actionToSetup->setIcon( QIcon( ":/2DMap16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/2DMap16x16.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -93,7 +93,7 @@ void caf::AppEnum<RigWellTargetMapping::VolumesType>::setUp()
 //--------------------------------------------------------------------------------------------------
 RimWellTargetMapping::RimWellTargetMapping()
 {
-    CAF_PDM_InitObject( "Well Target Mapping", ":/WellTargets.png" );
+    CAF_PDM_InitObject( "Well Target Mapping", ":/WellTargets.svg" );
 
     CAF_PDM_InitField( &m_timeStep, "TimeStep", 0, "Time Step" );
 

@@ -47,7 +47,7 @@ CAF_PDM_SOURCE_INIT( RimStatisticsContourMapView, "RimStatisticsContourMapView" 
 RimStatisticsContourMapView::RimStatisticsContourMapView()
     : RimEclipseContourMapView()
 {
-    CAF_PDM_InitObject( "Contour Map View", ":/2DMap16x16.png", "", "", "StatisticsContourMap", "A contour map for Eclipse cases" );
+    CAF_PDM_InitObject( "Contour Map View", ":/2DMap16x16.svg", "", "", "StatisticsContourMap", "A contour map for Eclipse cases" );
 
     CAF_PDM_InitFieldNoDefault( &m_statisticsContourMap, "StatisticsContourMap", "Statistics Contour Map" );
 

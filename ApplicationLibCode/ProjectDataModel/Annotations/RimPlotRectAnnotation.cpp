@@ -32,7 +32,7 @@ CAF_PDM_SOURCE_INIT( RimPlotRectAnnotation, "RimPlotRectAnnotation" );
 //--------------------------------------------------------------------------------------------------
 RimPlotRectAnnotation::RimPlotRectAnnotation()
 {
-    CAF_PDM_InitObject( "Plot Rect Annotation", ":/LeftAxis16x16.png" );
+    CAF_PDM_InitObject( "Plot Rect Annotation", ":/LeftAxis16x16.svg" );
 
     CAF_PDM_InitFieldNoDefault( &m_minX, "MinX", "Min X" );
     CAF_PDM_InitFieldNoDefault( &m_maxX, "MaxX", "Max X" );

@@ -63,5 +63,5 @@ void RicNewPlotDataFilterFeature::onActionTriggered( bool isChecked )
 void RicNewPlotDataFilterFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "New Plot Data Filter" );
-    actionToSetup->setIcon( QIcon( ":/AnalysisPlotFilter16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/AnalysisPlotFilter16x16.svg" ) );
 }

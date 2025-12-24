@@ -185,5 +185,5 @@ bool RicNewEditableWellPathFeature::copyWellPathGeometry( RimFileWellPath* sourc
 void RicNewEditableWellPathFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Editable Well Path" );
-    actionToSetup->setIcon( QIcon( ":/EditableWell.png" ) );
+    actionToSetup->setIcon( QIcon( ":/EditableWell.svg" ) );
 }

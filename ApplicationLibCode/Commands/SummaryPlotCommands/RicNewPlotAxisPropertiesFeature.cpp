@@ -62,5 +62,5 @@ void RicNewPlotAxisPropertiesFeature::onActionTriggered( bool isChecked )
 void RicNewPlotAxisPropertiesFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "New Plot Axis" );
-    actionToSetup->setIcon( QIcon( ":/LeftAxis16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/LeftAxis16x16.svg" ) );
 }

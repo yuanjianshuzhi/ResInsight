@@ -81,5 +81,5 @@ void RicCollapseSiblingsFeature::setupActionLook( QAction* actionToSetup )
     }
 
     actionToSetup->setText( "Collapse Other " + objectName );
-    //    actionToSetup->setIcon(QIcon(":/ToggleOn16x16.png"));
+    //    actionToSetup->setIcon(QIcon(":/ToggleOn16x16.svg"));
 }
