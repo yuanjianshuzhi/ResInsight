@@ -94,7 +94,7 @@ void RicCreateGridCaseEnsemblesFromFilesFeature::onActionTriggered( bool isCheck
 //--------------------------------------------------------------------------------------------------
 void RicCreateGridCaseEnsemblesFromFilesFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CreateGridCaseGroup16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CreateGridCaseGroup16x16.svg" ) );
     actionToSetup->setText( "&Create Grid Case Ensemble" );
 }
 

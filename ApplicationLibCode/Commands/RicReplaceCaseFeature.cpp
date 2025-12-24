@@ -121,5 +121,5 @@ void RicReplaceCaseFeature::onActionTriggered( bool isChecked )
 void RicReplaceCaseFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Replace" );
-    actionToSetup->setIcon( QIcon( ":/ReplaceCase16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/ReplaceCase16x16.svg" ) );
 }

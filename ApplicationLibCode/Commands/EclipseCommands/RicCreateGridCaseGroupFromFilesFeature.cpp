@@ -67,6 +67,6 @@ void RicCreateGridCaseGroupFromFilesFeature::onActionTriggered( bool isChecked )
 //--------------------------------------------------------------------------------------------------
 void RicCreateGridCaseGroupFromFilesFeature::setupActionLook( QAction* actionToSetup )
 {
-    actionToSetup->setIcon( QIcon( ":/CreateGridCaseGroup16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/CreateGridCaseGroup16x16.svg" ) );
     actionToSetup->setText( "&Create Grid Case Group" );
 }

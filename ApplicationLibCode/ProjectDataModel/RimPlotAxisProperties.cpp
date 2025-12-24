@@ -60,7 +60,7 @@ RimPlotAxisProperties::RimPlotAxisProperties()
     , m_isRangeSettingsEnabled( true )
     , m_isAlwaysRequired( false )
 {
-    CAF_PDM_InitObject( "Axis Properties", ":/LeftAxis16x16.png" );
+    CAF_PDM_InitObject( "Axis Properties", ":/LeftAxis16x16.svg" );
 
     CAF_PDM_InitField( &m_isActive, "Active", true, "Active" );
     m_isActive.uiCapability()->setUiHidden( true );
@@ -286,7 +286,7 @@ void RimPlotAxisProperties::setNameAndAxis( const QString& objectName, const QSt
     m_plotAxis      = axis;
     m_plotAxisIndex = axisIndex;
 
-    if ( axis == RiaDefines::PlotAxis::PLOT_AXIS_LEFT ) setUiIconFromResourceString( ":/LeftAxis16x16.png" );
+    if ( axis == RiaDefines::PlotAxis::PLOT_AXIS_LEFT ) setUiIconFromResourceString( ":/LeftAxis16x16.svg" );
     if ( axis == RiaDefines::PlotAxis::PLOT_AXIS_RIGHT ) setUiIconFromResourceString( ":/RightAxis16x16.png" );
     if ( axis == RiaDefines::PlotAxis::PLOT_AXIS_BOTTOM ) setUiIconFromResourceString( ":/BottomAxis16x16.png" );
     if ( axis == RiaDefines::PlotAxis::PLOT_AXIS_TOP ) setUiIconFromResourceString( ":/TopAxis16x16.png" );

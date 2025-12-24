@@ -57,7 +57,7 @@ RimWellPathGeometryDef::RimWellPathGeometryDef()
     , m_pickTargetsEventHandler( new RicCreateWellTargetsPickEventHandler( this ) )
 {
     CAF_PDM_InitScriptableObjectWithNameAndComment( "Well Targets",
-                                                    ":/WellTargets.png",
+                                                    ":/WellTargets.svg",
                                                     "",
                                                     "",
                                                     "WellPathGeometry",

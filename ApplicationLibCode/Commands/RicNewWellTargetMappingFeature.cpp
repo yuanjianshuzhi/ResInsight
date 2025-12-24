@@ -63,5 +63,5 @@ void RicNewWellTargetMappingFeature::onActionTriggered( bool isChecked )
 void RicNewWellTargetMappingFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create Well Target Mapping" );
-    actionToSetup->setIcon( QIcon( ":/WellTargets.png" ) );
+    actionToSetup->setIcon( QIcon( ":/WellTargets.svg" ) );
 }

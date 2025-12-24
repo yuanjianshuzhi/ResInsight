@@ -300,7 +300,7 @@
         <file>pinned.svg</file>
         <file>pinned-remove.svg</file>
         <file>Select.svg</file>
-		<file>TimedRefresh.png</file>
+        <file>TimedRefresh.png</file>
         <file>NavigationProperty.svg</file>
         <file>user-defined-view.svg</file>
         <file>stop.svg</file>
@@ -386,6 +386,16 @@
         <file>ObservedData.svg</file>
         <file>LasFile16x16.svg</file>
         <file>EclipseInput48x48.svg</file>
+        <file>AnalysisPlotFilter16x16.svg</file>
+        <file>CreateGridCaseGroup16x16.svg</file>
+        <file>EditableWell.svg</file>
+        <file>WellTargets.svg</file>
+        <file>2DMap16x16.svg</file>
+        <file>ReplaceCase16x16.svg</file>
+        <file>ToggleOn16x16.svg</file>
+        <file>ToggleOff16x16.svg</file>
+        <file>ToggleOnOff16x16.svg</file>
+        <file>LeftAxis16x16.svg</file>
     </qresource>
     <qresource prefix="/Shader">
         <file>fs_CellFace.glsl</file>

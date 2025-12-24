@@ -50,7 +50,7 @@ CAF_PDM_SOURCE_INIT( RimModeledWellPath, "ModeledWellPath" );
 //--------------------------------------------------------------------------------------------------
 RimModeledWellPath::RimModeledWellPath()
 {
-    CAF_PDM_InitScriptableObject( "Modeled Well Path", ":/EditableWell.png", "", "A Well Path created interactively in ResInsight" );
+    CAF_PDM_InitScriptableObject( "Modeled Well Path", ":/EditableWell.svg", "", "A Well Path created interactively in ResInsight" );
 
     CAF_PDM_InitScriptableFieldWithScriptKeywordNoDefault( &m_geometryDefinition, "WellPathGeometryDef", "WellPathGeometry", "Trajectory" );
     m_geometryDefinition = new RimWellPathGeometryDef;

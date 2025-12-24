@@ -73,7 +73,7 @@ void RicNewStatisticsContourMapViewFeature::onActionTriggered( bool isChecked )
 void RicNewStatisticsContourMapViewFeature::setupActionLook( QAction* actionToSetup )
 {
     actionToSetup->setText( "Create View" );
-    actionToSetup->setIcon( QIcon( ":/2DMap16x16.png" ) );
+    actionToSetup->setIcon( QIcon( ":/2DMap16x16.svg" ) );
 }
 
 //--------------------------------------------------------------------------------------------------

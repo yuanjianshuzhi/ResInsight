@@ -55,7 +55,7 @@ RimEclipseContourMapView::RimEclipseContourMapView()
     : m_cameraPositionLastUpdate( cvf::Vec3d::UNDEFINED )
 {
     CAF_PDM_InitScriptableObjectWithNameAndComment( "Contour Map View",
-                                                    ":/2DMap16x16.png",
+                                                    ":/2DMap16x16.svg",
                                                     "",
                                                     "",
                                                     "EclipseContourMap",
