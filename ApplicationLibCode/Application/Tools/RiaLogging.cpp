@@ -26,7 +26,7 @@
 
 #ifdef WIN32
 #pragma warning( push )
-#pragma warning( disable : 4668 )
+#pragma warning( disable :4668 )
 // Define this one to tell windows.h to not define min() and max() as macros
 #if defined WIN32 && !defined NOMINMAX
 #define NOMINMAX
@@ -40,6 +40,12 @@
 
 #include <QMessageBox>
 #include <QString>
+#include <QCoreApplication>
+#include <QMetaObject>
+#include <QThread>
+
+#include "cafMessagePanel.h"
+#include "cafProgressInfo.h"
 
 //==================================================================================================
 //
@@ -333,7 +339,53 @@ void RiaLogging::errorInMessageBox( QWidget* parent, const QString& title, const
 {
     if ( RiaGuiApplication::isRunning() && !RiaRegressionTestRunner::instance()->isRunningRegressionTests() )
     {
-        QMessageBox::warning( parent, title, text );
+        // If a non-modal message panel exists in the UI, prefer appending the message there so
+        // nothing blocks and the message is visible while progress continues. If we prefer to block
+        // progress until user dismisses the message, show a modal dialog on GUI thread and temporarily
+        // disable the progress UI.
+        if ( caf::MessagePanel::instance() != nullptr )
+        {
+            // Append to panel on GUI thread
+            auto appendToPanel = [text]() { caf::MessagePanel::instance()->showWarning( text ); };
+            if ( QCoreApplication::instance() && QCoreApplication::instance()->thread() != QThread::currentThread() )
+            {
+                QMetaObject::invokeMethod( QCoreApplication::instance(), appendToPanel, Qt::QueuedConnection );
+            }
+            else
+            {
+                appendToPanel();
+            }
+        }
+        else
+        {
+            // Show modal dialog on GUI thread and block the caller until closed.
+            auto showModal = [parent, title, text]() {
+                // Temporarily disable progress UI to avoid conflicts
+                caf::ProgressInfoStatic::setEnabled( false );
+
+                QMessageBox msgBox( parent );
+                msgBox.setIcon( QMessageBox::Warning );
+                msgBox.setWindowTitle( title );
+                msgBox.setText( text );
+                msgBox.setStandardButtons( QMessageBox::Ok );
+                msgBox.setWindowModality( Qt::ApplicationModal );
+                msgBox.setWindowFlag( Qt::WindowStaysOnTopHint, true );
+
+                msgBox.exec();
+
+                caf::ProgressInfoStatic::setEnabled( true );
+            };
+
+            if ( QCoreApplication::instance() && QCoreApplication::instance()->thread() != QThread::currentThread() )
+            {
+                // BlockingQueuedConnection will block the current thread until the GUI thread has executed the call
+                QMetaObject::invokeMethod( QCoreApplication::instance(), showModal, Qt::BlockingQueuedConnection );
+            }
+            else
+            {
+                showModal();
+            }
+        }
     }
 
     RiaLogging::error( text );

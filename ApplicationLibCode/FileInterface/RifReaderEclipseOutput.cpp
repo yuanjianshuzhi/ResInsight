@@ -60,6 +60,7 @@
 
 #include <QDateTime>
 #include <QFileInfo>
+#include <qmessagebox.h>
 
 #include <cmath> // Needed for HUGE_VAL on Linux
 #include <iostream>
@@ -91,8 +92,8 @@
 //   /  |          /  |              /
 //  0-------------1   |             *---i
 //  |   |         |   |             |
-//  |   6---------|---7             |
-//  |  /          |  /              |k
+//  |   6---------|---7             |k
+//  |  /          |  /              |
 //  | /           | /
 //  |/            |/
 //  4-------------5
@@ -391,7 +392,9 @@ bool RifReaderEclipseOutput::open( const QString& fileName, RigEclipseCaseData* 
         {
             QString errorMessage = QString( " Failed to create a main grid from file\n%1" ).arg( m_fileName );
             RiaLogging::error( errorMessage );
-
+            // QMessageBox::information( nullptr, "title", "error" );
+            // Show a non-blocking error message so that progress dialogs do not block program flow
+            RiaLogging::errorInMessageBox( nullptr, "Failed to create main grid", errorMessage );
             return false;
         }
     }
