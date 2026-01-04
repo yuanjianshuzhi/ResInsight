@@ -287,6 +287,29 @@ void RiuMainWindow::initializeGuiNewProjectLoaded()
             m_seismicHistogramPanel->showHistogram( firstSelectedObject );
         }
     }
+
+
+    QTimer::singleShot( 2000,
+                        this,
+                        [this]()
+                        {
+                            // 找到 Project Tree 的 dock 并把它设为当前 tab
+                            ads::CDockWidget* projDock =
+                                RiuDockWidgetTools::findDockWidget( dockManager(), RiuDockWidgetTools::mainWindowProjectTreeName() );
+                            if ( projDock )
+                            {
+                                // 确保可见并设为当前 tab
+                                projDock->setStyleSheet( "QFrame { background-color: #E4F1FF; }" );
+                                projDock->show();
+                                projDock->setAsCurrentTab();
+
+                                // 把焦点给 tree view，便于键盘操作
+                                if ( auto tv = dynamic_cast<caf::PdmUiTreeView*>( projDock->widget() ) )
+                                {
+                                    if ( tv->treeView() ) tv->treeView()->setFocus();
+                                }
+                            }
+                        } );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -828,6 +851,7 @@ void RiuMainWindow::createDockPanels()
         projectTree->enableAppendOfClassNameToUiItemText( RiaPreferencesSystem::current()->appendClassNameToUiText() );
 
         dockWidget->setWidget( projectTree );
+        //dockWidget->show();
         dockWidget->hide();
 
         projectTree->treeView()->setHeaderHidden( true );
@@ -854,6 +878,7 @@ void RiuMainWindow::createDockPanels()
 
         projectTree->setUiConfigurationName( treeViewConfigs[i] );
     }
+    //QApplication::processEvents();
 
     // undo/redo view
     if ( m_undoView && RiaPreferences::current()->useUndoRedo() )
