@@ -185,7 +185,7 @@ void RiuMainWindowBase::loadWinGeoAndDockToolBarLayout()
 
         if ( dockState.isValid() )
         {
-            dockingOk = m_dockManager->restoreState( dockState.toByteArray(), DOCKSTATE_VERSION );
+            //dockingOk = m_dockManager->restoreState( dockState.toByteArray(), DOCKSTATE_VERSION );
         }
 
         if ( !dockingOk )
