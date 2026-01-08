@@ -450,12 +450,16 @@ void RiaGuiApplication::initialize()
 
     applyGuiPreferences( nullptr );
 
+    RiuGuiTheme::updateGuiTheme( m_preferences->guiTheme() );///////////////////////
+
     // Create main windows
     // The plot window is created to be able to set expanded state on created objects, but hidden by default
     getOrCreateAndShowMainWindow();
     getOrCreateMainPlotWindow();
 
-    RiuGuiTheme::updateGuiTheme( m_preferences->guiTheme() );
+
+
+    //RiuGuiTheme::updateGuiTheme( m_preferences->guiTheme() );
 
     {
         auto logger = std::make_unique<RiuMessagePanelLogger>();
@@ -979,6 +983,7 @@ RiuPlotMainWindow* RiaGuiApplication::getOrCreateMainPlotWindow()
     if ( !m_mainPlotWindow )
     {
         createMainPlotWindow();
+
         m_mainPlotWindow->initializeGuiNewProjectLoaded();
         loadAndUpdatePlotData();
     }
@@ -1002,6 +1007,7 @@ void RiaGuiApplication::createMainWindow()
     m_mainWindow->setDefaultWindowSize();
     m_mainWindow->setDefaultToolbarVisibility();
     m_mainWindow->loadWinGeoAndDockToolBarLayout();
+
     m_mainWindow->showWindow();
 
     // if there is an existing logger, reconnect to it
