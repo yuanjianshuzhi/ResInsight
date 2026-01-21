@@ -1208,7 +1208,7 @@ cvf::Vec3d RimExtrudedCurveIntersection::extrusionDirection() const
             // Use first and last point of polyline to approximate orientation of polyline
             // Then cross with Z axis to find extrusion direction
 
-            cvf::Vec3d polyLineDir = firstLine[firstLine.size() - 1] - firstLine[0];
+            cvf::Vec3d polyLineDir = firstLine[firstLine.size() - 2] - firstLine[0];
             cvf::Vec3d up          = cvf::Vec3d::Z_AXIS;
             dir                    = polyLineDir ^ up;
         }

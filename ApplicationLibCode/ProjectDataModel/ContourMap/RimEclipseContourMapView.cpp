@@ -271,7 +271,7 @@ void RimEclipseContourMapView::onUpdateDisplayModelForCurrentTimeStep()
 //--------------------------------------------------------------------------------------------------
 void RimEclipseContourMapView::updateGeometry()
 {
-    caf::ProgressInfo progress( 100, "Generate Contour Map", true );
+    //caf::ProgressInfo progress( 100, "Generate Contour Map", true );
 
     updateVisibleGeometries();
     updateVisibleCellColors();
@@ -282,21 +282,21 @@ void RimEclipseContourMapView::updateGeometry()
             m_contourMapProjection->generateResultsIfNecessary( m_currentTimeStep() );
         }
         onUpdateLegends();
-        progress.setProgress( 30 );
+        //progress.setProgress( 30 );
     }
 
     onUpdateLegends(); // To make sure the scalar mappers are set up correctly
 
     { // Step 2: generate geometry. Takes about 60% of the time.
         createContourMapGeometry();
-        progress.setProgress( 90 );
+        //progress.setProgress( 90 );
     }
 
     { // Step 3: generate drawables. Takes about 10% of the time.
         appendContourMapProjectionToModel();
         appendContourLinesToModel();
         appendPickPointVisToModel();
-        progress.setProgress( 100 );
+        //progress.setProgress( 100 );
     }
 
     appendWellsAndFracturesToModel();
