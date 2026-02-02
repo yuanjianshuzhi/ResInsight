@@ -41,7 +41,7 @@
 
 struct ecl_kw_struct {
   UTIL_TYPE_ID_DECLARATION;
-  int               size;
+  size_t            size;
   ecl_data_type     data_type;
   char            * header8;              /* Header which is right padded with ' ' to become exactly 8 characters long. Should only be used internally.*/
   char            * header;               /* Header which is trimmed to no-space. */
@@ -299,7 +299,7 @@ static char * ecl_kw_alloc_output_buffer(const ecl_kw_type * ecl_kw) {
 
 
 static char * ecl_kw_alloc_input_buffer(const ecl_kw_type * ecl_kw) {
-  size_t buffer_size = ecl_kw->size * ecl_type_get_sizeof_iotype(ecl_kw->data_type);
+  size_t buffer_size = size_t(ecl_kw->size) * ecl_type_get_sizeof_iotype(ecl_kw->data_type);
   char * buffer = (char*)util_malloc( buffer_size );
 
   return buffer;
@@ -1243,7 +1243,7 @@ bool ecl_kw_fread_data(ecl_kw_type *ecl_kw, fortio_type *fortio) {
     } else {
       char * buffer = ecl_kw_alloc_input_buffer(ecl_kw);
       const int sizeof_iotype = ecl_type_get_sizeof_iotype(ecl_kw->data_type);
-      bool read_ok = fortio_fread_buffer(fortio, buffer, ecl_kw->size * sizeof_iotype);
+      bool read_ok = fortio_fread_buffer(fortio, buffer, size_t(ecl_kw->size) * sizeof_iotype);
 
       if (read_ok)
         ecl_kw_load_from_input_buffer(ecl_kw, buffer);
@@ -1498,7 +1498,7 @@ void ecl_kw_alloc_data(ecl_kw_type *ecl_kw) {
     util_abort("%s: trying to allocate data for ecl_kw object which has been declared with shared storage - aborting \n",__func__);
 
   {
-    size_t byte_size = ecl_kw->size * ecl_type_get_sizeof_ctype(ecl_kw->data_type);
+    size_t byte_size = size_t(ecl_kw->size) * ecl_type_get_sizeof_ctype(ecl_kw->data_type);
     ecl_kw->data = (char*)util_realloc(ecl_kw->data , byte_size );
     memset(ecl_kw->data , 0 , byte_size);
   }

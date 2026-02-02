@@ -469,7 +469,7 @@ int fortio_init_read(fortio_type *fortio) {
 bool fortio_data_fskip(fortio_type* fortio, const int element_size, const int element_count, const int block_count) {
   int headers = block_count * 4;
   int trailers = block_count * 4;
-  int bytes_to_skip = headers + trailers + (element_size * element_count);
+  long long bytes_to_skip = headers + trailers + (element_size * (long long)element_count);
 
   return fortio_fseek(fortio, bytes_to_skip, SEEK_CUR);
 }
@@ -547,8 +547,8 @@ static int fortio_fread_record(fortio_type *fortio , char *buffer) {
    transparent, low-level way.
 */
 
-bool fortio_fread_buffer(fortio_type * fortio, char * buffer , int buffer_size) {
-  int total_bytes_read = 0;
+bool fortio_fread_buffer(fortio_type * fortio, char * buffer , size_t buffer_size) {
+  size_t total_bytes_read = 0;
 
   while (true) {
     char * buffer_ptr = &buffer[total_bytes_read];

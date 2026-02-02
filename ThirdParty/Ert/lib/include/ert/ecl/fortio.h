@@ -58,7 +58,7 @@ typedef struct fortio_struct fortio_type;
   void               fortio_complete_write(fortio_type * , int record_size);
   void               fortio_fskip_buffer(fortio_type *, int );
   int                fortio_fskip_record(fortio_type *);
-  bool               fortio_fread_buffer(fortio_type * , char * buffer, int buffer_size);
+  bool               fortio_fread_buffer(fortio_type * , char * buffer, size_t buffer_size);
   void               fortio_fwrite_record(fortio_type * , const char * buffer, int buffer_size);
   FILE        *      fortio_get_FILE(const fortio_type *);
   void               fortio_fflush(fortio_type * ) ;
