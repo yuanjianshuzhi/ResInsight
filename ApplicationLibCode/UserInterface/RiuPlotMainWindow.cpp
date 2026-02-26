@@ -512,6 +512,7 @@ void RiuPlotMainWindow::createDockPanels()
     // the project trees
     for ( int i = 0; i < nTreeViews; i++ )
     {
+        if ( i != 0 ) continue; // Skip templates and scripts/jobs tree views for now as they are not implemented
         auto dockWidget = RiuDockWidgetTools::createDockWidget( treeViewTitles[i], treeViewDockNames[i], dockManager() );
 
         caf::PdmUiTreeView* projectTree = projectTreeView( i );
@@ -545,21 +546,21 @@ void RiuPlotMainWindow::createDockPanels()
         projectTree->setUiConfigurationName( treeViewConfigs[i] );
     }
 
-    // the plot manager
+    // the plot manager hidden for now as a beta version
     {
-        auto dockWidget =
-            RiuDockWidgetTools::createDockWidget( "Plot Manager", RiuDockWidgetTools::plotMainWindowPlotManagerName(), dockManager() );
+        //auto dockWidget =
+        //    RiuDockWidgetTools::createDockWidget( "Plot Manager", RiuDockWidgetTools::plotMainWindowPlotManagerName(), dockManager() );
 
-        m_summaryPlotManagerView = std::make_unique<caf::PdmUiPropertyView>( dockWidget );
+        //m_summaryPlotManagerView = std::make_unique<caf::PdmUiPropertyView>( dockWidget );
 
-        auto plotManager = std::make_unique<RimSummaryPlotManager>();
-        m_summaryPlotManagerView->showProperties( plotManager.get() );
-        m_summaryPlotManagerView->installEventFilter( plotManager.get() );
-        m_summaryPlotManager = std::move( plotManager );
+        //auto plotManager = std::make_unique<RimSummaryPlotManager>();
+        //m_summaryPlotManagerView->showProperties( plotManager.get() );
+        //m_summaryPlotManagerView->installEventFilter( plotManager.get() );
+        //m_summaryPlotManager = std::move( plotManager );
 
-        dockWidget->setWidget( m_summaryPlotManagerView.get() );
+        //dockWidget->setWidget( m_summaryPlotManagerView.get() );
 
-        rightWidgets.push_back( dockWidget );
+        //rightWidgets.push_back( dockWidget );
     }
 
     // the undo stack
@@ -578,12 +579,13 @@ void RiuPlotMainWindow::createDockPanels()
         addTabbedWidgets( bottomWidgets, ads::DockWidgetArea::BottomDockWidgetArea, dockManager()->centralWidget()->dockAreaWidget() );
 
     // the log message view
+    // blocked for a beta version
     {
         auto dockWidget = RiuDockWidgetTools::createDockWidget( "Messages", RiuDockWidgetTools::plotMainWindowMessagesName(), dockManager() );
 
         m_messagePanel = new RiuMessagePanel( dockWidget );
         dockWidget->setWidget( m_messagePanel );
-        dockManager()->addDockWidget( ads::DockWidgetArea::BottomDockWidgetArea, dockWidget, rightArea );
+        //dockManager()->addDockWidget( ads::DockWidgetArea::BottomDockWidgetArea, dockWidget, rightArea );
     }
 
     auto createPropertyView = [this]( const QString& displayName, const QString& internalName, ads::CDockAreaWidget* dockArea )
@@ -596,16 +598,19 @@ void RiuPlotMainWindow::createDockPanels()
     };
 
     auto leftPropertyView = createPropertyView( "Property Editor", RiuDockWidgetTools::plotMainWindowPropertyEditorName(), leftArea );
-    auto rightPropertyView =
-        createPropertyView( "Data Source Property Editor", RiuDockWidgetTools::plotMainWindowPropertyEditorRightName(), rightArea );
+
+    //blocked for a beta version, and the commented out line below too
+    //auto rightPropertyView =
+    //    createPropertyView( "Data Source Property Editor", RiuDockWidgetTools::plotMainWindowPropertyEditorRightName(), rightArea );
 
     // Connect project trees with property views
     for ( int i = 0; i < nTreeViews; i++ )
     {
         caf::PdmUiTreeView* projectTree = projectTreeView( i );
 
-        auto pdmUiPropertyView = defaultDockWidgetArea[i] == ads::DockWidgetArea::LeftDockWidgetArea ? leftPropertyView : rightPropertyView;
+        //auto pdmUiPropertyView = defaultDockWidgetArea[i] == ads::DockWidgetArea::LeftDockWidgetArea ? leftPropertyView : rightPropertyView;
 
+        auto pdmUiPropertyView = defaultDockWidgetArea[i] == ads::DockWidgetArea::LeftDockWidgetArea ? leftPropertyView : nullptr;
         connect( projectTree,
                  &caf::PdmUiTreeView::selectionChanged,
                  [this, projectTree, pdmUiPropertyView]() { selectedObjectsChanged( projectTree, pdmUiPropertyView.get() ); } );

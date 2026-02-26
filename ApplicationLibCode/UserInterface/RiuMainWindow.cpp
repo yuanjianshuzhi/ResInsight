@@ -840,8 +840,12 @@ void RiuMainWindow::createDockPanels()
     std::vector<ads::CDockWidget*> rightWidgets;
     std::vector<ads::CDockWidget*> leftWidgets;
     std::vector<ads::CDockWidget*> bottomWidgets;
+    //for ( int i = 0; i < nTreeViews; i++ )
 
-    for ( int i = 0; i < nTreeViews; i++ )
+        // for ( int i = 0; i < nTreeViews; i++ ) we want to just show the project tree at the beginning, the other two tree views are
+        // hidden and will be shown when user click the corresponding tab, so we create the dock widget for all three tree views but only
+        // show the project tree's dock widget at the beginning
+    for ( int i = 0; i < 1; i++ )
     {
         auto dockWidget = RiuDockWidgetTools::createDockWidget( treeViewTitles[i], treeViewDockNames[i], dockManager() );
 
@@ -909,6 +913,13 @@ void RiuMainWindow::createDockPanels()
     ads::CDockAreaWidget* bottomArea =
         addTabbedWidgets( bottomWidgets, ads::DockWidgetArea::BottomDockWidgetArea, dockManager()->centralWidget()->dockAreaWidget() );
 
+    if ( bottomArea )
+    {
+        bottomArea->setStyleSheet( "QTabBar::tab { background: #E4F1FF; }"
+                                   "QTabWidget::pane { background: #E4F1FF; }"
+                                   "QFrame { background: #E4F1FF; }" );
+    }
+
     {
         auto dockWidget =
             RiuDockWidgetTools::createDockWidget( "Property Editor", RiuDockWidgetTools::mainWindowPropertyEditorName(), dockManager() );
@@ -924,7 +935,7 @@ void RiuMainWindow::createDockPanels()
 
         m_quickAccessView = new caf::PdmUiPropertyView( dockWidget );
         dockWidget->setWidget( m_quickAccessView );
-        dockManager()->addDockWidget( ads::DockWidgetArea::BottomDockWidgetArea, dockWidget, leftArea );
+        //dockManager()->addDockWidget( ads::DockWidgetArea::BottomDockWidgetArea, dockWidget, leftArea );
     }
 
 #ifdef USE_ODB_API
@@ -979,7 +990,7 @@ void RiuMainWindow::createDockPanels()
 
         m_cellSelectionTool = new RiuCellSelectionTool( dockWidget );
         dockWidget->setWidget( m_cellSelectionTool );
-        dockManager()->addDockWidget( ads::DockWidgetArea::LeftDockWidgetArea, dockWidget, bottomArea );
+        //dockManager()->addDockWidget( ads::DockWidgetArea::LeftDockWidgetArea, dockWidget, bottomArea );
     }
 
     ads::CDockAreaWidget* procAndMsgTabs = nullptr;
@@ -1584,7 +1595,6 @@ void RiuMainWindow::slotBuildWindowActions()
     addDefaultEntriesToWindowsMenu();
 
     m_windowMenu->addSeparator();
-    m_windowMenu->addAction( m_eclRunnerAction );
     m_windowMenu->addAction( m_newPropertyView );
 }
 

@@ -38,6 +38,9 @@
 #include <QVBoxLayout>
 #include <algorithm>
 #include <QMessageBox>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QBrush>
 
 RicEclRunnerDialog::RicEclRunnerDialog( QWidget* parent )
     : QWidget( parent )
@@ -108,6 +111,21 @@ void RicEclRunnerDialog::setupUi()
     m_triggerCombo->addItem( "Y-3" );
     m_triggerCombo->addItem( "Y-1" );
     m_triggerCombo->setCurrentText( "Y-3" ); // 设置默认值为e300
+
+    // Make the second entry (index1, "Y-1") disabled/unselectable and shown grayed
+    {
+    QStandardItemModel* sim = qobject_cast<QStandardItemModel*>( m_triggerCombo->model() );
+    if ( sim )
+    {
+    QStandardItem* item = sim->item(1 );
+    if ( item )
+    {
+    item->setEnabled( false );
+    item->setForeground( QBrush( Qt::gray ) );
+    }
+    }
+    }
+
     m_triggerCombo->setFont( defaultFont );
     // Ensure the combo and its label match the button height so they align with the "Add Files" button
     if ( standardButtonHeight > 0 )
