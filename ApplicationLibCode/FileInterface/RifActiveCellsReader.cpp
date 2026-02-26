@@ -138,7 +138,7 @@ void RifActiveCellsReader::applyActiveCellsToAllGrids( ecl_grid_type* ecl_main_g
 
         const auto& activeCellsForGrid = activeCellsForAllGrids[gridIndex];
 
-        // TOTEST: when I disabled the assert, some grid files used to crash here now they seem to work.
+        //to_be_fixed: when I disabled the assert, some grid files used to crash here now they seem to work.
         //CAF_ASSERT( ecl_grid_get_global_size( currentGrid ) == static_cast<int>( activeCellsForGrid.size() ) );
 
         auto actnum_values = activeCellsForGrid.data();
