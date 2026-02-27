@@ -57,15 +57,15 @@ void RicHelpAboutFeature::onActionTriggered( bool isChecked )
 
     dlg.setApplicationName( RI_APPLICATION_NAME );
     dlg.setApplicationVersion( RiaApplication::getVersionStringApp( true ) );
-    dlg.setCopyright( "Copyright Equinor ASA, Ceetron Solutions AS, Ceetron AS" );
+    dlg.setCopyright( "Copyright Yuanjian Digital Intelligence" );
     dlg.showQtVersion( false );
 #ifdef _DEBUG
     dlg.setIsDebugBuild( true );
 #endif
 
-    dlg.addVersionEntry( " ", "ResInsight is made available under the GNU General Public License v. 3" );
-    dlg.addVersionEntry( " ", "See http://www.gnu.org/licenses/gpl.html" );
-    dlg.addVersionEntry( " ", " " );
+    //dlg.addVersionEntry( " ", "Y-Sim is made available under the GNU General Public License v. 3" );
+    //dlg.addVersionEntry( " ", "See http://www.gnu.org/licenses/gpl.html" );
+    //dlg.addVersionEntry( " ", " " );
 
     QStringList activeFeatures;
 #ifdef USE_ODB_API

@@ -109,7 +109,7 @@ QMenu* RiuMenuBarBuildTools::createDefaultHelpMenu( QMenuBar* menuBar )
     {
         // Ensure the menubar shows text "About" and not an icon: set explicit text and clear icon
         existingAbout->setText( "&About" );
-        //existingAbout->setIcon( QIcon() );
+        existingAbout->setIcon( QIcon() );
         menuBar->addAction( existingAbout );
     }
 
@@ -117,16 +117,16 @@ QMenu* RiuMenuBarBuildTools::createDefaultHelpMenu( QMenuBar* menuBar )
     return nullptr;
 }
 
-QAction* RiuMenuBarBuildTools::createDefaultAboutAction( QMenuBar* menuBar )
-{
-    caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
-    CVF_ASSERT( menuBar && cmdFeatureMgr );
-
-    QAction* aboutAction = menuBar->addAction( "&About" );
-
-
-    return aboutAction;
-}
+//QAction* RiuMenuBarBuildTools::createDefaultAboutAction( QMenuBar* menuBar )
+//{
+//    caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
+//    CVF_ASSERT( menuBar && cmdFeatureMgr );
+//
+//    QAction* aboutAction = menuBar->addAction( "&About" );
+//
+//
+//    return aboutAction;
+//}
 
 //--------------------------------------------------------------------------------------------------
 ///

@@ -35,6 +35,17 @@
 #include "cvfqtUtils.h"
 
 #include <QFile>
+#include <QMessageBox>
+#include <QNetworkInterface>
+#include <QCryptographicHash>
+#include <QHostInfo>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QVBoxLayout>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 #ifndef WIN32
 #include <sys/types.h>
@@ -67,6 +78,81 @@ RiaApplication* createApplication( int& argc, char* argv[] )
 #else
     return new RiaGuiApplication( argc, argv );
 #endif
+}
+
+static QString computeMachineCode()
+{
+    // Try to use a MAC address as a basis for a machine code. If none found, fall back to hostname.
+    auto interfaces = QNetworkInterface::allInterfaces();
+    for ( const QNetworkInterface& iface : interfaces )
+    {
+        const QByteArray hw = iface.hardwareAddress().toLatin1();
+        if ( !hw.isEmpty() && hw != "00:00:00:00:00:00" )
+        {
+            const QByteArray hash = QCryptographicHash::hash( hw, QCryptographicHash::Sha256 );
+            // Use a short hex string as machine code
+            return QString::fromLatin1( hash.toHex().left(12 ).toUpper() );
+        }
+    }
+
+    // Fallback: use hostname
+    QString host = QHostInfo::localHostName();
+    const QByteArray hash = QCryptographicHash::hash( host.toLatin1(), QCryptographicHash::Sha256 );
+    return QString::fromLatin1( hash.toHex().left(12 ).toUpper() );
+}
+
+// Shows a blocking dialog with machine code and a password QLineEdit that only accepts alphanumeric.
+// Returns true if user provided a non-empty alphanumeric password and pressed OK. Returns false if user canceled.
+static bool showMachineCodeAndRequirePassword()
+{
+    QString machineCode = computeMachineCode();
+
+    QDialog dlg;
+    dlg.setWindowTitle( "License verification" );
+    dlg.setModal( true );
+
+    QVBoxLayout* layout = new QVBoxLayout( &dlg );
+
+    QLabel* infoLabel = new QLabel( QStringLiteral( "This machine code is %1. Please contact the licensor to obtain a key." ).arg( machineCode ) );
+    infoLabel->setWordWrap( true );
+    layout->addWidget( infoLabel );
+
+    QLabel* passLabel = new QLabel( "Enter password:" );
+    layout->addWidget( passLabel );
+
+    QLineEdit* passwordEdit = new QLineEdit( &dlg );
+    passwordEdit->setEchoMode( QLineEdit::Password );
+    // Only allow ASCII letters and digits, at least one char required
+    QRegularExpression re("^[A-Za-z0-9]+$");
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator( re, passwordEdit );
+    passwordEdit->setValidator( validator );
+    layout->addWidget( passwordEdit );
+
+    QDialogButtonBox* buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg );
+    layout->addWidget( buttons );
+
+    QObject::connect( buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept );
+    QObject::connect( buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject );
+
+    while ( true )
+    {
+        int ret = dlg.exec();
+        if ( ret == QDialog::Rejected )
+        {
+            return false; // user canceled -> block application
+        }
+
+        QString pwd = passwordEdit->text();
+        // Validator already restricts characters; ensure non-empty
+        if ( pwd.isEmpty() )
+        {
+            QMessageBox::warning( nullptr, "Invalid password", "Password must be non-empty and contain only letters and digits." );
+            continue;
+        }
+
+        // Accept any non-empty alphanumeric password for now
+        return true;
+    }
 }
 
 int main( int argc, char* argv[] )
@@ -134,6 +220,17 @@ int main( int argc, char* argv[] )
     caf::UiAppearanceSettings::instance()->setAutoValueEditorColor( "moccasin" );
 
     std::unique_ptr<RiaApplication> app( createApplication( argc, argv ) );
+
+    // Show machine code dialog before GUI is initialized (only for GUI app)
+    if ( dynamic_cast<RiaGuiApplication*>( app.get() ) != nullptr )
+    {
+        bool ok = showMachineCodeAndRequirePassword();
+        if ( !ok )
+        {
+            // User cancelled or didn't provide password -> exit
+            return 0;
+        }
+    }
 
     cvf::ProgramOptions progOpt;
     bool                result = RiaArgumentParser::parseArguments( &progOpt );
