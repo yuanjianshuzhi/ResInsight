@@ -210,6 +210,9 @@ private slots:
     // Memory update slot
     void updateMemoryUsage();
 
+    // Toolbar update slot
+    void updateToolbarIconSizes();
+
     // File slots
     void slotRefreshFileActions();
 

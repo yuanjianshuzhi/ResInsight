@@ -429,6 +429,8 @@ void RiuPlotMainWindow::createToolBars()
     caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
     CVF_ASSERT( cmdFeatureMgr );
 
+    int iconSize = RiaPreferences::current()->toolbarIconSize();
+
     QStringList toolbarNames;
     toolbarNames << "Standard" << "Window Management" << "View Snapshots" << "View";
 
@@ -436,6 +438,7 @@ void RiuPlotMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( toolbarName );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
 
         QStringList toolbarCommands = toolbarCommandIds( toolbarName );
         for ( QString s : toolbarCommands )
@@ -463,6 +466,7 @@ void RiuPlotMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Edit" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( m_undoAction );
         toolbar->addAction( m_redoAction );
     }
@@ -477,6 +481,25 @@ void RiuPlotMainWindow::refreshToolbars()
 
     caf::CmdFeatureManager::instance()->refreshEnabledState( allToolbarCommandNames );
     caf::CmdFeatureManager::instance()->refreshCheckedState( allToolbarCommandNames );
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+void RiuPlotMainWindow::updateToolbarIconSizes()
+{
+    int iconSize = RiaPreferences::current()->toolbarIconSize();
+
+    // Get all toolbars in the plot main window
+    QList<QToolBar*> toolbars = findChildren<QToolBar*>();
+
+    for ( QToolBar* toolbar : toolbars )
+    {
+        if ( toolbar )
+        {
+            toolbar->setIconSize( QSize( iconSize, iconSize ) );
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------

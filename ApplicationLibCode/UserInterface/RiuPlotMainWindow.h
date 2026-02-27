@@ -121,6 +121,7 @@ private slots:
     void slotToggleSelectionLink();
     void slotToggleAutoUpdate();
     void slotReloadSelectedCases();
+    void updateToolbarIconSizes();
 
     friend class RiuMdiSubWindow;
 

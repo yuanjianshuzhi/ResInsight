@@ -130,6 +130,8 @@ public:
     RiaPreferencesGrid*    gridPreferences() const;
     RiaPreferencesOpm*     opmPreferences() const;
 
+    int toolbarIconSize() const;
+
     void importPreferenceValuesFromFile( const QString& fileName );
     void exportPreferenceValuesToFile( const QString& fileName );
 
@@ -253,6 +255,9 @@ private:
     // Load and save preferences
     caf::PdmField<bool> m_exportPreferences;
     caf::PdmField<bool> m_importPreferences;
+
+    // Toolbar icon size
+    caf::PdmField<int> m_toolbarIconSize;
 
     QStringList m_tabNames;
 };

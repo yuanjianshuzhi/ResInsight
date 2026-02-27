@@ -617,9 +617,12 @@ void RiuMainWindow::createToolBars()
     caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
     CVF_ASSERT( cmdFeatureMgr );
 
+    int iconSize = RiaPreferences::current()->toolbarIconSize();
+
     {
         QToolBar* toolbar = addToolBar( tr( "Standard" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportEclipseCaseFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicOpenProjectFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicSaveProjectFeature" ) );
@@ -629,6 +632,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Edit" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( m_undoAction );
         toolbar->addAction( m_redoAction );
     }
@@ -636,6 +640,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Import" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportEclipseCaseFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportInputEclipseCaseFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportSummaryCaseFeature" ) );
@@ -646,6 +651,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Import GeoMech" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportGeoMechCaseFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportGeoMechCaseTimeStepFilterFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicImportElementPropertyFeature" ) );
@@ -655,6 +661,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Window Management" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicShowPlotWindowFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicLinkVisibleViewsFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicTileWindowsFeature" ) );
@@ -664,6 +671,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "View Snapshots" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicSnapshotViewToClipboardFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicSnapshotViewToFileFeature" ) );
         toolbar->addAction( m_snapshotAllViewsToFile );
@@ -675,6 +683,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "View" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicTogglePerspectiveViewFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicViewZoomAllFeature" ) );
         toolbar->addAction( m_viewFullScreen );
@@ -703,6 +712,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* dsToolBar = addToolBar( tr( "Draw Style" ) );
         dsToolBar->setObjectName( dsToolBar->windowTitle() );
+        dsToolBar->setIconSize( QSize( iconSize, iconSize ) );
         dsToolBar->addAction( m_drawStyleLinesAction );
         dsToolBar->addAction( m_drawStyleLinesSolidAction );
         dsToolBar->addAction( m_drawStyleSurfOnlyAction );
@@ -717,6 +727,7 @@ void RiuMainWindow::createToolBars()
     {
         m_holoLensToolBar = addToolBar( tr( "HoloLens" ) );
         m_holoLensToolBar->setObjectName( m_holoLensToolBar->windowTitle() );
+        m_holoLensToolBar->setIconSize( QSize( iconSize, iconSize ) );
 
         m_holoLensToolBar->addAction( cmdFeatureMgr->action( "RicHoloLensCreateSessionFeature" ) );
         m_holoLensToolBar->addAction( cmdFeatureMgr->action( "RicHoloLensTerminateSessionFeature" ) );
@@ -727,6 +738,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Measurement" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         auto measureAction = cmdFeatureMgr->action( "RicToggleMeasurementModeFeature" );
         toolbar->addAction( measureAction );
         auto polyMeasureAction = cmdFeatureMgr->action( "RicTogglePolyMeasurementModeFeature" );
@@ -737,6 +749,7 @@ void RiuMainWindow::createToolBars()
     {
         QToolBar* toolbar = addToolBar( tr( "Test" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicSumoDataFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicLaunchRegressionTestsFeature" ) );
         toolbar->addAction( cmdFeatureMgr->action( "RicLaunchRegressionTestDialogFeature" ) );
@@ -750,10 +763,12 @@ void RiuMainWindow::createToolBars()
     // Create animation toolbar
     m_animationToolBar = new caf::AnimationToolBar( "Animation", this );
     addToolBar( m_animationToolBar );
+    m_animationToolBar->setIconSize( QSize( iconSize, iconSize ) );
 
     {
         QToolBar* toolbar = addToolBar( tr( "Timestep Slider" ) );
         toolbar->setObjectName( toolbar->windowTitle() );
+        toolbar->setIconSize( QSize( iconSize, iconSize ) );
 
         m_animationSlider = new QSlider( Qt::Horizontal, toolbar );
         m_animationSlider->setToolTip( "Current Time Step" );
@@ -1034,6 +1049,8 @@ void RiuMainWindow::refreshViewActions()
 //==================================================================================================
 
 //--------------------------------------------------------------------------------------------------
+///
+/// \brief RiuMainWindow::slotRefreshFileActions
 ///
 //--------------------------------------------------------------------------------------------------
 void RiuMainWindow::slotRefreshFileActions()
@@ -1553,7 +1570,9 @@ void RiuMainWindow::selectViewInProjectTreePreservingSubItemSelection( const Rim
 
 //--------------------------------------------------------------------------------------------------
 ///
-//--------------------------------------------------------------------------------------------------
+/// \brief RiuMainWindow::setActiveViewer
+/// \param viewer
+///
 void RiuMainWindow::setActiveViewer( QWidget* viewer )
 {
     QMdiSubWindow* swin = findMdiSubWindow( viewer );
@@ -1562,7 +1581,9 @@ void RiuMainWindow::setActiveViewer( QWidget* viewer )
 
 //--------------------------------------------------------------------------------------------------
 ///
-//--------------------------------------------------------------------------------------------------
+/// \brief RiuMainWindow::processMonitor
+/// \return
+///
 RiuProcessMonitor* RiuMainWindow::processMonitor()
 {
     return m_processMonitor;
@@ -1945,6 +1966,25 @@ void RiuMainWindow::updateMemoryUsage()
 //--------------------------------------------------------------------------------------------------
 ///
 //--------------------------------------------------------------------------------------------------
+void RiuMainWindow::updateToolbarIconSizes()
+{
+    int iconSize = RiaPreferences::current()->toolbarIconSize();
+
+    // Get all toolbars in the main window
+    QList<QToolBar*> toolbars = findChildren<QToolBar*>();
+
+    for ( QToolBar* toolbar : toolbars )
+    {
+        if ( toolbar )
+        {
+            toolbar->setIconSize( QSize( iconSize, iconSize ) );
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
 void RiuMainWindow::showProcessMonitorDockPanel()
 {
     RiuDockWidgetTools::showDockWidget( dockManager(), RiuDockWidgetTools::mainWindowProcessMonitorName() );
@@ -1959,7 +1999,9 @@ void RiuMainWindow::setDefaultToolbarVisibility()
 }
 
 //--------------------------------------------------------------------------------------------------
-///
+//
+// 饼图控制相关
+//
 //--------------------------------------------------------------------------------------------------
 void RiuMainWindow::applyFontSizesToDockedPlots()
 {

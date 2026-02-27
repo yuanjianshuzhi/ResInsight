@@ -40,6 +40,7 @@
 
 #include "RiuFileDialogTools.h"
 #include "RiuGuiTheme.h"
+#include "RiuPlotMainWindow.h"
 
 #include "cafPdmFieldCvfColor.h"
 #include "cafPdmSettings.h"
@@ -55,6 +56,8 @@
 #include <QDate>
 #include <QDir>
 #include <QLocale>
+#include <QMessageBox>
+#include <QProcess>
 #include <QStandardPaths>
 #include <QValidator>
 
@@ -289,6 +292,8 @@ RiaPreferences::RiaPreferences()
 
     CAF_PDM_InitFieldNoDefault( &m_exportPreferences, "exportPreferences", "Export To File" );
     caf::PdmUiPushButtonEditor::configureEditorLabelHidden( &m_exportPreferences );
+
+    CAF_PDM_InitField( &m_toolbarIconSize, "toolbarIconSize", 24, "Toolbar Icon Size (pixels)" );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -415,6 +420,7 @@ void RiaPreferences::defineUiOrdering( QString uiConfigName, caf::PdmUiOrdering&
         otherGroup->setCollapsedByDefault();
         otherGroup->add( &holoLensDisableCertificateVerification );
         otherGroup->add( &m_useUndoRedo );
+        otherGroup->add( &m_toolbarIconSize );
 
         caf::PdmUiGroup* importExportGroup = uiOrdering.addNewGroup( "Import and Export" );
         importExportGroup->setCollapsedByDefault();
@@ -612,6 +618,61 @@ void RiaPreferences::fieldChangedByUi( const caf::PdmFieldHandle* changedField, 
         importPreferenceValuesFromFile( filePath );
 
         m_importPreferences = false;
+    }
+    else if ( changedField == &m_toolbarIconSize )
+    {
+        bool updateSuccessful = false;
+
+        // Try to update main window toolbar icon sizes immediately
+        RiaGuiApplication* guiApp = dynamic_cast<RiaGuiApplication*>( RiaApplication::instance() );
+        if ( guiApp )
+        {
+            QWidget* mainWindow = guiApp->mainWindow();
+            if ( mainWindow )
+            {
+                // Call the updateToolbarIconSizes slot to update immediately
+                bool result = QMetaObject::invokeMethod( 
+                    mainWindow, 
+                    "updateToolbarIconSizes", 
+                    Qt::AutoConnection 
+                );
+                
+                if ( result )
+                {
+                    updateSuccessful = true;
+                }
+            }
+        }
+
+        // Also try to update plot main window toolbar icon sizes
+        RiuPlotMainWindow* plotWindow = RiuPlotMainWindow::instance();
+        if ( plotWindow )
+        {
+            bool result = QMetaObject::invokeMethod( 
+                plotWindow, 
+                "updateToolbarIconSizes", 
+                Qt::AutoConnection 
+            );
+            
+            if ( result )
+            {
+                updateSuccessful = true;
+            }
+        }
+
+        if ( updateSuccessful )
+        {
+            // Update was successful for at least one window
+            return;
+        }
+
+        // If immediate update was not possible, show a message asking user to restart
+        QMessageBox::information( 
+            nullptr, 
+            "Toolbar Icon Size Changed", 
+            "The toolbar icon size has been changed.\n\n"
+            "Please restart the application for the changes to take effect." 
+        );
     }
     else
     {
@@ -1028,6 +1089,14 @@ QString RiaPreferences::octavePortNumber() const
 bool RiaPreferences::storeBackupOfProjectFiles() const
 {
     return m_storeBackupOfProjectFile();
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+int RiaPreferences::toolbarIconSize() const
+{
+    return m_toolbarIconSize();
 }
 
 //--------------------------------------------------------------------------------------------------
