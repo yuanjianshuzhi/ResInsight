@@ -91,17 +91,41 @@ QMenu* RiuMenuBarBuildTools::createDefaultHelpMenu( QMenuBar* menuBar )
     caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
     CVF_ASSERT( menuBar && cmdFeatureMgr );
 
-    QMenu* helpMenu = menuBar->addMenu( "&Help" );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicHelpAboutFeature" ) );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicHelpCommandLineFeature" ) );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicHelpSummaryCommandLineFeature" ) );
-    helpMenu->addSeparator();
-    helpMenu->addAction( cmdFeatureMgr->action( "RicHelpOpenUsersGuideFeature" ) );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicSearchHelpFeature" ) );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicSearchIssuesHelpFeature" ) );
-    helpMenu->addAction( cmdFeatureMgr->action( "RicCreateNewIssueHelpFeature" ) );
+    // Add About action directly on the menubar instead of creating a Help menu
 
-    return helpMenu;
+    //QMenu* helpMenu = menuBar->addMenu( "&Help" );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicHelpAboutFeature" ) );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicHelpCommandLineFeature" ) );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicHelpSummaryCommandLineFeature" ) );
+    //helpMenu->addSeparator();
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicHelpOpenUsersGuideFeature" ) );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicSearchHelpFeature" ) );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicSearchIssuesHelpFeature" ) );
+    //helpMenu->addAction( cmdFeatureMgr->action( "RicCreateNewIssueHelpFeature" ) );
+    //return helpMenu;
+
+    QAction* existingAbout = cmdFeatureMgr->action( "RicHelpAboutFeature" );
+    if ( existingAbout )
+    {
+        // Ensure the menubar shows text "About" and not an icon: set explicit text and clear icon
+        existingAbout->setText( "&About" );
+        //existingAbout->setIcon( QIcon() );
+        menuBar->addAction( existingAbout );
+    }
+
+    // No Help menu is created anymore; return nullptr so caller can handle that case
+    return nullptr;
+}
+
+QAction* RiuMenuBarBuildTools::createDefaultAboutAction( QMenuBar* menuBar )
+{
+    caf::CmdFeatureManager* cmdFeatureMgr = caf::CmdFeatureManager::instance();
+    CVF_ASSERT( menuBar && cmdFeatureMgr );
+
+    QAction* aboutAction = menuBar->addAction( "&About" );
+
+
+    return aboutAction;
 }
 
 //--------------------------------------------------------------------------------------------------

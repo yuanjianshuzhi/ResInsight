@@ -32,6 +32,7 @@ QMenu* createDefaultFileMenu( QMenuBar* menuBar );
 QMenu* createDefaultEditMenu( QMenuBar* menuBar );
 QMenu* createDefaultViewMenu( QMenuBar* menuBar );
 QMenu* createDefaultHelpMenu( QMenuBar* menuBar );
+QAction* createDefaultAboutAction( QMenuBar* menuBar );
 
 void addImportMenuWithActions( QObject* parent, QMenu* menu );
 void addSaveProjectActions( QMenu* menu );
