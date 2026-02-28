@@ -118,7 +118,19 @@ set(EXE_FILES
     .clang-tidy
 )
 
-qt_add_executable(ResInsight ${EXE_FILES})
+qt_add_executable(Y-Sim 
+    ${EXE_FILES} 
+    ${QRC_FILES}
+)
+
+# 强制指定输出文件名，确保所有配置下都是Y-Sim.exe
+set_target_properties(Y-Sim PROPERTIES
+    OUTPUT_NAME "Y-Sim"
+    DEBUG_OUTPUT_NAME "Y-Sim"
+    RELEASE_OUTPUT_NAME "Y-Sim"
+    RELWITHDEBINFO_OUTPUT_NAME "Y-Sim"
+    WIN32_EXECUTABLE ON  # 保持GUI程序属性
+)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set_target_properties(
@@ -152,7 +164,7 @@ if(MSVC)
 
   message(STATUS "BUILD_FLAGS_FOR_MSVC ${BUILD_FLAGS_FOR_MSVC}")
   set_target_properties(
-    ResInsight PROPERTIES COMPILE_FLAGS ${BUILD_FLAGS_FOR_MSVC}
+    Y-Sim PROPERTIES COMPILE_FLAGS ${BUILD_FLAGS_FOR_MSVC}
   )
 
 endif()
@@ -185,7 +197,7 @@ if(RESINSIGHT_ENABLE_GRPC)
 
   if(MSVC)
     set_target_properties(
-      ResInsight PROPERTIES LINK_FLAGS_RELWITHDEBINFO
+       Y-Sim PROPERTIES LINK_FLAGS_RELWITHDEBINFO
                             "/NODEFAULTLIB:MSVCRTD.lib"
     )
   endif()
@@ -229,7 +241,7 @@ if(RESINSIGHT_ENABLE_OPENVDS)
   add_definitions(-DUSE_OPENVDS)
 endif()
 
-target_link_libraries(ResInsight PRIVATE ${LINK_LIBRARIES})
+target_link_libraries( Y-Sim PRIVATE ${LINK_LIBRARIES})
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(ResInsight PRIVATE xcb)
@@ -280,7 +292,7 @@ add_custom_target(PreBuildFileCopy ${copyCommands})
 set_property(TARGET PreBuildFileCopy PROPERTY FOLDER "FileCopyTargets")
 
 # Make ResInsight depend on the prebuild target.
-add_dependencies(ResInsight PreBuildFileCopy)
+add_dependencies( Y-Sim PreBuildFileCopy)
 
 # Generate Python code in a target that is part of ALL_BUILD and depends on
 # ResInsight
@@ -297,7 +309,7 @@ if(RESINSIGHT_ENABLE_GRPC)
   add_custom_target(
     RipsGeneratedPythonClasses ALL SOURCES ${GENERATED_CLASSES_FILE}
   )
-  add_dependencies(RipsGeneratedPythonClasses ResInsight)
+  add_dependencies(RipsGeneratedPythonClasses Y-Sim)
 
   # Copy the Python folder to build folder. This will ease debugging of Python
   # scripts
@@ -307,7 +319,7 @@ if(RESINSIGHT_ENABLE_GRPC)
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory
       "${CMAKE_SOURCE_DIR}/GrpcInterface/Python"
-      $<TARGET_FILE_DIR:ResInsight>/Python
+      $<TARGET_FILE_DIR:Y-Sim>/Python
   )
 
 endif(RESINSIGHT_ENABLE_GRPC)
@@ -333,7 +345,7 @@ if(RESINSIGHT_PRIVATE_INSTALL)
       set(PROTOBUF_DLL "$<IF:$<CONFIG:Debug>,libprotobufd,libprotobuf>")
       set(GRPC_DLL_NAMES ${PROTOBUF_DLL} cares ${ZLIB_DLL} abseil_dll)
       foreach(dllname ${GRPC_DLL_NAMES})
-        install(FILES $<TARGET_FILE_DIR:ResInsight>/${dllname}.dll
+        install(FILES $<TARGET_FILE_DIR:Y-Sim>/${dllname}.dll
                 DESTINATION ${RESINSIGHT_INSTALL_FOLDER}
         )
       endforeach(dllname ${GRPC_DLL_NAMES})
@@ -378,7 +390,7 @@ if(RESINSIGHT_PRIVATE_INSTALL)
   endif()
 
   install(
-    TARGETS ResInsight
+    TARGETS  Y-Sim
     BUNDLE DESTINATION ${RESINSIGHT_INSTALL_FOLDER} COMPONENT Runtime
     RUNTIME DESTINATION ${RESINSIGHT_INSTALL_FOLDER} COMPONENT Runtime
   )
@@ -400,10 +412,10 @@ if(RESINSIGHT_PRIVATE_INSTALL)
     # standard error.
     #
     add_custom_command(
-      TARGET ResInsight
+      TARGET  Y-Sim
       POST_BUILD
       COMMAND
-        ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:ResInsight>
+        ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:Y-Sim>
         "$<IF:$<CONFIG:Debug>,--debug,--release>" --no-translations >NUL 2>NUL
       COMMENT
         "Running windeployqt to deploy Qt dependencies to the build folder, required by install()"
@@ -411,7 +423,7 @@ if(RESINSIGHT_PRIVATE_INSTALL)
 
     # Running windeployqt to deploy Qt dependencies to the install folder"
     install(
-      TARGETS ResInsight
+      TARGETS  Y-Sim
       DESTINATION ${RESINSIGHT_INSTALL_FOLDER}
       RUNTIME_DEPENDENCIES PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
       POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
@@ -483,7 +495,7 @@ if(Qt6Widgets_VERSION VERSION_LESS 6.5.0)
   )
 else()
   qt_generate_deploy_app_script(
-    TARGET ResInsight OUTPUT_SCRIPT deploy_script NO_UNSUPPORTED_PLATFORM_ERROR
+    TARGET Y-Sim OUTPUT_SCRIPT deploy_script NO_UNSUPPORTED_PLATFORM_ERROR
     NO_TRANSLATIONS
   )
   install(SCRIPT ${deploy_script})
