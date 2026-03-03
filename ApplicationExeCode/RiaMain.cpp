@@ -47,6 +47,9 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QDir>
+#include <QPushButton>
+#include <QClipboard>
+#include <QApplication>
 
 #ifndef WIN32
 #include <sys/types.h>
@@ -109,9 +112,16 @@ static QString computeMachineCode()
 #ifdef Q_OS_WIN
     // Use WMI to query Win32_NetworkAdapter PermanentAddress for reliable physical MAC
     QString hwAddr;
+    QString boardId;
     HRESULT hres = CoInitializeEx(0, COINIT_MULTITHREADED);
     bool coInitialized = SUCCEEDED(hres);
-    if (SUCCEEDED(hres))
+    if ( hres == RPC_E_CHANGED_MODE )
+    {
+        // COM 已在当前线程初始化但模式不同 —— 继续使用已有 COM 初始化，
+        // 但不要在结束时调用 CoUninitialize。
+        coInitialized = false;
+    }
+    if ( SUCCEEDED( hres ) || hres == RPC_E_CHANGED_MODE )
     {
         hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
                                    RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
@@ -125,6 +135,7 @@ static QString computeMachineCode()
                 CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
                                   RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
 
+                // Query for permanent MAC addresses
                 IEnumWbemClassObject* pEnumerator = nullptr;
                 if (SUCCEEDED(pSvc->ExecQuery(_bstr_t(L"WQL"),
                                               _bstr_t(L"SELECT PermanentAddress FROM Win32_NetworkAdapter WHERE PermanentAddress IS NOT NULL"),
@@ -155,6 +166,43 @@ static QString computeMachineCode()
                     }
                     pEnumerator->Release();
                 }
+
+                // Query baseboard (motherboard) serial / product info
+                IEnumWbemClassObject* pBoardEnum = nullptr;
+                if (SUCCEEDED(pSvc->ExecQuery(_bstr_t(L"WQL"),
+                                              _bstr_t(L"SELECT SerialNumber,Product FROM Win32_BaseBoard"),
+                                              WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pBoardEnum)))
+                {
+                    IWbemClassObject* pBoardObj = nullptr;
+                    ULONG uReturn2 =0;
+                    if (pBoardEnum && SUCCEEDED(pBoardEnum->Next(WBEM_INFINITE,1, &pBoardObj, &uReturn2)) && uReturn2)
+                    {
+                        VARIANT vtSerial;
+                        VariantInit(&vtSerial);
+                        if (SUCCEEDED(pBoardObj->Get(_bstr_t(L"SerialNumber"),0, &vtSerial, NULL, NULL)))
+                        {
+                            if (vtSerial.vt == VT_BSTR && vtSerial.bstrVal)
+                                boardId = QString::fromWCharArray(vtSerial.bstrVal).trimmed();
+                            VariantClear(&vtSerial);
+                        }
+
+                        if (boardId.isEmpty())
+                        {
+                            VARIANT vtProduct;
+                            VariantInit(&vtProduct);
+                            if (SUCCEEDED(pBoardObj->Get(_bstr_t(L"Product"),0, &vtProduct, NULL, NULL)))
+                            {
+                                if (vtProduct.vt == VT_BSTR && vtProduct.bstrVal)
+                                    boardId = QString::fromWCharArray(vtProduct.bstrVal).trimmed();
+                                VariantClear(&vtProduct);
+                            }
+                        }
+
+                        pBoardObj->Release();
+                    }
+                    if (pBoardEnum) pBoardEnum->Release();
+                }
+
                 pSvc->Release();
             }
             pLoc->Release();
@@ -163,17 +211,28 @@ static QString computeMachineCode()
             CoUninitialize();
     }
 
-    if (!hwAddr.isEmpty())
+    // Use whatever combination we have, with fallbacks
+    QString combined;
+    if (!hwAddr.isEmpty() && !boardId.isEmpty())
+        combined = hwAddr + ":" + boardId;
+    else if (!hwAddr.isEmpty())
+        combined = hwAddr;
+    else if (!boardId.isEmpty())
+        combined = boardId;
+
+    if (!combined.isEmpty())
     {
-        const QByteArray hash = QCryptographicHash::hash(hwAddr.toLatin1(), QCryptographicHash::Sha256);
-        return QString::fromLatin1(hash.toHex().left(12).toUpper());
+        const QByteArray hash = QCryptographicHash::hash(combined.toLatin1(), QCryptographicHash::Sha256);
+        return QString::fromLatin1(hash.toHex().toUpper());
     }
-    // Fallback to previous method if WMI didn't yield a physical MAC
+
+    // Fallback to previous method if WMI didn't yield a physical MAC or board id
 #endif // Q_OS_WIN
 
 #ifndef Q_OS_WIN
     // Try to read permanent hardware address from /sys/class/net/<iface>/perm_addr
     QString hwAddr;
+    QString boardId;
     QDir sysNetDir("/sys/class/net");
     if (sysNetDir.exists())
     {
@@ -196,9 +255,39 @@ static QString computeMachineCode()
         }
     }
 
+    // Attempt to read board id from sysfs DMI entries
+    QStringList dmiCandidates = {"/sys/class/dmi/id/board_serial", "/sys/class/dmi/id/product_uuid", "/sys/class/dmi/id/board_name"};
+    for (const QString& path : dmiCandidates)
+    {
+        QFile f(path);
+        if (f.exists() && f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QByteArray data = f.readAll();
+            f.close();
+            QString candidate = QString::fromLatin1(data).trimmed();
+            if (!candidate.isEmpty() && candidate != "0" && candidate != "None")
+            {
+                boardId = candidate;
+                break;
+            }
+        }
+    }
+
+    if (!hwAddr.isEmpty() && !boardId.isEmpty())
+    {
+        const QByteArray hash = QCryptographicHash::hash((hwAddr + ":" + boardId).toLatin1(), QCryptographicHash::Sha256);
+        return QString::fromLatin1(hash.toHex().left(12).toUpper());
+    }
+
     if (!hwAddr.isEmpty())
     {
         const QByteArray hash = QCryptographicHash::hash(hwAddr.toLatin1(), QCryptographicHash::Sha256);
+        return QString::fromLatin1(hash.toHex().left(12).toUpper());
+    }
+
+    if (!boardId.isEmpty())
+    {
+        const QByteArray hash = QCryptographicHash::hash(boardId.toLatin1(), QCryptographicHash::Sha256);
         return QString::fromLatin1(hash.toHex().left(12).toUpper());
     }
 #endif // !Q_OS_WIN
@@ -211,14 +300,14 @@ static QString computeMachineCode()
         if (!hw.isEmpty() && hw != "00:00:00:00:00:00")
         {
             const QByteArray hash = QCryptographicHash::hash(hw, QCryptographicHash::Sha256);
-            return QString::fromLatin1(hash.toHex().left(12).toUpper());
+            return QString::fromLatin1(hash.toHex().toUpper());
         }
     }
 
     // Fallback: use hostname
     QString host = QHostInfo::localHostName();
     const QByteArray hash = QCryptographicHash::hash(host.toLatin1(), QCryptographicHash::Sha256);
-    return QString::fromLatin1(hash.toHex().left(12).toUpper());
+    return QString::fromLatin1(hash.toHex().toUpper());
 }
 
 
@@ -353,11 +442,6 @@ bool verifyJsonFile( const std::string& filePath, const std::string& machineCode
     return true;
 }
 
-bool verifyMachineCode(const QString& keyFilePath, const QString& machineCode)
-{
-
-}
-
 // Helper stub for public key validation. The real verification algorithm will be provided later.
 static bool validatePublicKey( const QString& keyFilePath, const QString& machineCode )
 {
@@ -371,6 +455,11 @@ static bool validatePublicKey( const QString& keyFilePath, const QString& machin
     bRet = verifyJsonFile( keyFilePath.toStdString(), machineCode.toStdString(), isValid );
 
     return isValid;
+}
+
+bool verifyMachineCode(const QString& keyFilePath, const QString& machineCode)
+{
+    return validatePublicKey(keyFilePath, machineCode);
 }
 
 // Shows a blocking dialog with machine code and a password QLineEdit that only accepts alphanumeric.
@@ -417,6 +506,24 @@ static bool showMachineCodeAndRequirePassword()
         infoLabel->setWordWrap( true );
         layout->addWidget( infoLabel );
 
+        // Make the machine code easy to copy: read-only QLineEdit + Copy button
+        QLineEdit* codeEdit = new QLineEdit( machineCode );
+        codeEdit->setReadOnly( true );
+        codeEdit->setFocusPolicy( Qt::StrongFocus );
+        codeEdit->setSelection(0, machineCode.length() );
+
+        QHBoxLayout* codeLayout = new QHBoxLayout();
+        codeLayout->addWidget( codeEdit );
+
+        QPushButton* copyBtn = new QPushButton( QObject::tr("Copy") );
+        codeLayout->addWidget( copyBtn );
+        layout->addLayout( codeLayout );
+
+        QObject::connect( copyBtn, &QPushButton::clicked, [machineCode]() {
+            QClipboard* cb = QApplication::clipboard();
+            if ( cb ) cb->setText( machineCode );
+        } );
+
         QDialogButtonBox* buttons = new QDialogButtonBox( QDialogButtonBox::Ok, &dlg );
         layout->addWidget( buttons );
 
@@ -443,6 +550,23 @@ static bool showMachineCodeAndRequirePassword()
     QLabel* errLabel = new QLabel( QStringLiteral( "The provided public key appears to be invalid for this machine. Please contact the licensor or request a trial. Machine code: %1" ).arg( machineCode ) );
     errLabel->setWordWrap( true );
     layout->addWidget( errLabel );
+
+    // Machine code field with copy button for convenience
+    QLineEdit* codeEditErr = new QLineEdit( machineCode );
+    codeEditErr->setReadOnly( true );
+    codeEditErr->setFocusPolicy( Qt::StrongFocus );
+    codeEditErr->setSelection(0, machineCode.length() );
+
+    QHBoxLayout* codeLayoutErr = new QHBoxLayout();
+    codeLayoutErr->addWidget( codeEditErr );
+    QPushButton* copyBtnErr = new QPushButton( QObject::tr("Copy") );
+    codeLayoutErr->addWidget( copyBtnErr );
+    layout->addLayout( codeLayoutErr );
+
+    QObject::connect( copyBtnErr, &QPushButton::clicked, [machineCode]() {
+        QClipboard* cb = QApplication::clipboard();
+        if ( cb ) cb->setText( machineCode );
+    } );
 
     QDialogButtonBox* buttons = new QDialogButtonBox( QDialogButtonBox::Ok, &errDlg );
     layout->addWidget( buttons );
