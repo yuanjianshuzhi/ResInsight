@@ -63,10 +63,24 @@ endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# ========== 核心：统一 CRT 运行时库（匹配 OpenSSL 的 MD/MDd） ==========
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/openssl")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(OPENSSL_LIB_SUBDIR "MDd")
+    message(STATUS "当前为 Debug 模式，使用 OpenSSL MDd 版本")
+else()
+    set(OPENSSL_LIB_SUBDIR "MD")
+    message(STATUS "当前为 Release 模式，使用 OpenSSL MD 版本")
+endif()
+
 set(BUILD_SHARED_LIBS
     OFF
     CACHE BOOL "ERT: Build shared libraries"
 )
+
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -348,7 +362,7 @@ else()
   else()
     add_subdirectory(ThirdParty/Ert)
   endif()
-
+    
   if(MSVC)
     # resdata : Disable some warnings
     set_target_properties(
@@ -1210,6 +1224,27 @@ if(MSVC AND RESINSIGHT_ENABLE_STATIC_ANALYSIS)
     )
   endforeach()
 endif(MSVC AND RESINSIGHT_ENABLE_STATIC_ANALYSIS)
+
+
+# OpenSSL 头文件路径（必须指向包含 openssl/ 子文件夹的目录）
+set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")
+# OpenSSL 导入库路径（VC/x64/MD/MDd）
+set(OPENSSL_LIB_DIR "${OPENSSL_ROOT_DIR}/lib/VC/x64/${OPENSSL_LIB_SUBDIR}")
+# OpenSSL DLL 路径（核对！确保这里能找到 libcrypto-3-x64.dll）
+set(OPENSSL_BIN_DIR "${OPENSSL_ROOT_DIR}")
+
+include_directories(${OPENSSL_INCLUDE_DIR})
+find_library(OPENSSL_CRYPTO_LIB
+    NAMES libcrypto        # 要找的导入库文件名（不用写 .lib）
+    PATHS ${OPENSSL_LIB_DIR}
+    NO_DEFAULT_PATH        # 只在指定路径找，不找系统库
+)
+
+target_link_libraries(Y-Sim
+    PRIVATE
+    ${OPENSSL_CRYPTO_LIB}  # 链接核心加密库
+    # 若用到 SSL/HTTPS，添加：${OPENSSL_SSL_LIB}（需额外查找 libssl.lib）
+)
 
 # ##############################################################################
 # Code documentation using Doxygen
