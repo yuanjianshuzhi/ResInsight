@@ -179,6 +179,9 @@ private:
     QAction* m_executePaintEventPerformanceTest;
     QAction* m_eclRunnerAction;
 
+    // New Export Well Error Data action
+    QAction* m_exportWellErrorDataAction;
+
     caf::AnimationToolBar* m_animationToolBar;
 
     RiuResultInfoPanel*       m_resultInfoPanel;
@@ -212,6 +215,7 @@ private slots:
 
     // File slots
     void slotRefreshFileActions();
+    void slotExportWellErrorData();
 
     // Edit slots
     void slotNewObjectPropertyView();

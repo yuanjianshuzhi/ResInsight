@@ -113,6 +113,11 @@
 #include <QUndoStack>
 #include <QUndoView>
 #include <QUrl>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFile>
 
 #include <QDebug>
 
@@ -529,6 +534,10 @@ void RiuMainWindow::createMenus()
     exportMenu->addAction( cmdFeatureMgr->action( "RicSaveEclipseInputActiveVisibleCellsFeature" ) );
     exportMenu->addAction( cmdFeatureMgr->action( "RicExportCompletionsForVisibleWellPathsFeature" ) );
     exportMenu->addAction( cmdFeatureMgr->action( "RicExportVisibleWellPathsFeature" ) );
+    // Add Export Well Error Data (creates a JSON with placeholders)
+    m_exportWellErrorDataAction = new QAction( QIcon( ":/Save.svg" ), "Export Well Error Data", this );
+    connect( m_exportWellErrorDataAction, &QAction::triggered, this, &RiuMainWindow::slotExportWellErrorData );
+    exportMenu->addAction( m_exportWellErrorDataAction );
 
     // Save menu actions
     fileMenu->addSeparator();
@@ -2207,4 +2216,69 @@ void RiuMainWindow::dropEvent( QDropEvent* event )
     }
 
     event->acceptProposedAction();
+}
+
+//--------------------------------------------------------------------------------------------------
+///
+//--------------------------------------------------------------------------------------------------
+void RiuMainWindow::slotExportWellErrorData()
+{
+    // Determine project folder
+    RiaApplication* app = RiaApplication::instance();
+    if ( !app ) return;
+
+    QString projectFolder;
+    if ( app->project() && !app->project()->fileName().isEmpty() )
+    {
+        QFileInfo fi( app->project()->fileName() );
+        projectFolder = fi.absolutePath();
+    }
+    else
+    {
+        projectFolder = app->createAbsolutePathFromProjectRelativePath( "" );
+    }
+
+    QDir outDir( projectFolder );
+    if ( !outDir.exists() ) outDir.mkpath( "." );
+
+    QString outFileName = outDir.filePath( "well_error_data.json" );
+
+    // Gather information about the currently active case (if any)
+    QString currentCasePath;
+    int currentCaseId = -1;
+
+    Rim3dView* activeView = RiaApplication::instance()->activeReservoirView();
+    if ( activeView )
+    {
+        RimCase* ownerCase = activeView->ownerCase();
+        if ( ownerCase )
+        {
+            currentCasePath = ownerCase->gridFileName();
+            currentCaseId = ownerCase->caseId();
+        }
+    }
+
+    // Placeholder JSON: the actual collection of WOPT/WOPTH error points is not implemented here.
+    QJsonObject rootObj;
+    rootObj["project"] = app->project() ? app->project()->fileName() : QString();
+    rootObj["description"] = "Placeholder for Export Well Error Data. Replace with actual WOPT/WOPTH error points collection.";
+    rootObj["wells"] = QJsonArray();
+
+    // Add current case info for later use
+    rootObj["current_case_path"] = currentCasePath;
+    rootObj["current_case_id"] = currentCaseId;
+
+    QJsonDocument doc( rootObj );
+
+    QFile outFile( outFileName );
+    if ( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+    {
+        RiaLogging::error( QString( "Export Well Error Data: Could not open the file: %1" ).arg( outFileName ) );
+        return;
+    }
+
+    outFile.write( doc.toJson( QJsonDocument::Indented ) );
+    outFile.close();
+
+    RiaLogging::info( QString( "Exported well error data to %1" ).arg( outFileName ) );
 }
