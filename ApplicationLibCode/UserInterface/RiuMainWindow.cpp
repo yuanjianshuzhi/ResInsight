@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "RiuMainWindow.h"
+#include "Application/Tools/RiaQDateTimeTools.h"
 
 #include "RiaBaseDefs.h"
 #include "RiaGuiApplication.h"
@@ -71,6 +72,7 @@
 #include "RiuTools.h"
 #include "RiuTreeViewEventFilter.h"
 #include "RiuViewer.h"
+#include "RifOpmHdf5Summary.h"
 
 #include "cafAnimationToolBar.h"
 #include "cafCmdExecCommandManager.h"
@@ -122,6 +124,13 @@
 #include <QDebug>
 
 #include <algorithm>
+#include <map>
+
+struct WellErrorData
+{
+    std::string name;
+    std::map<time_t, std::pair<double,double>> productionWithTimesteps;
+};
 
 //==================================================================================================
 ///
@@ -2257,12 +2266,133 @@ void RiuMainWindow::slotExportWellErrorData()
             currentCaseId = ownerCase->caseId();
         }
     }
+    qsizetype ind1 = currentCasePath.indexOf('.');
+    QString   caseName = currentCasePath.left(ind1) + ".SMSPEC";
 
-    // Placeholder JSON: the actual collection of WOPT/WOPTH error points is not implemented here.
+    RifOpmHdf5Summary summary;
+    
+    if ( !summary.open( caseName, false, nullptr ) )
+    {
+        std::cerr << "Failed to open summary: " << caseName.toStdString() << std::endl;
+        return;
+    }
+
+    std::set<RifEclipseSummaryAddress> sumAddr = summary.allResultAddresses();
+    std::vector<RifEclipseSummaryAddress> woptTargets;
+    std::vector<RifEclipseSummaryAddress> wopthTargets;
+    for ( const auto& adr : sumAddr )
+    {
+        std::string base = RifEclipseSummaryAddress::baseVectorName( adr.vectorName() );
+        if ( base == "WOPT" )
+        {
+            woptTargets.push_back( adr );
+        }
+        else if (base == "WOPTH")
+        {
+            wopthTargets.push_back( adr );
+        }
+    }
+    std::vector<WellErrorData> wellErrorDataCollection;
+    std::vector<QDateTime>     timeCollection;
+    for (auto woptTarget : woptTargets)
+    {
+        WellErrorData targetData;
+        targetData.name       = woptTarget.wellName();
+        auto [ok, woptValues] = summary.values( woptTarget );
+        std::vector<double> wopthValues;
+        for (auto wopthTarget : wopthTargets)
+        {
+            if (wopthTarget.wellName() == woptTarget.wellName())
+            {
+                auto [ok, tmpValues] = summary.values( wopthTarget );
+                wopthValues          = tmpValues;
+            }
+        }
+        std::vector<time_t> timeSteps = summary.timeSteps( woptTarget );
+        QDateTime dateTime = RiaQDateTimeTools::fromTime_t( timeSteps[0] );
+        
+        for ( size_t i = 0; i < timeSteps.size(); i++ )
+        {
+            if ( wopthValues[i] == 0 )
+                targetData.productionWithTimesteps[timeSteps[i]] = std::make_pair( 0, 0 );
+            else
+                targetData.productionWithTimesteps[timeSteps[i]] = std::make_pair( woptValues[i], ( woptValues[i] / wopthValues[i] - 1 ) );
+        }
+
+        wellErrorDataCollection.push_back( targetData );
+    }
+
+    if ( woptTargets.empty() )
+    {
+        std::cout << "No WOPT/WOPTH addresses found \n";
+        return ;
+    }
+
+    // Build JSON with wells and time steps
+    QJsonArray wellsArray;
+
+    // Collect all unique time steps across wells
+    std::set<time_t> allTimeStepsSet;
+    for ( const auto& w : wellErrorDataCollection )
+    {
+        for ( const auto& entry : w.productionWithTimesteps )
+        {
+            allTimeStepsSet.insert( entry.first );
+        }
+    }
+
+    // Convert unique time steps to sorted vector
+    std::vector<time_t> allTimeSteps( allTimeStepsSet.begin(), allTimeStepsSet.end() );
+
+    // Create JSON time_steps array (ISO8601 strings)
+    QJsonArray timeStepsArray;
+    for ( time_t t : allTimeSteps )
+    {
+        QDateTime dt = RiaQDateTimeTools::fromTime_t( t );
+        timeStepsArray.append( dt.toString( Qt::ISODate ) );
+    }
+
+    // Build wells array
+    for ( const auto& w : wellErrorDataCollection )
+    {
+        QJsonObject wellObj;
+        wellObj["name"] = QString::fromStdString( w.name );
+
+        QJsonArray prodArr;
+        // Iterate in chronological order
+        for ( const auto& t : allTimeSteps )
+        {
+            auto it = w.productionWithTimesteps.find( t );
+            if ( it == w.productionWithTimesteps.end() )
+            {
+                // No data for this time step: write nulls
+                QJsonObject rec;
+                QDateTime dt = RiaQDateTimeTools::fromTime_t( t );
+                rec["time"] = dt.toString( Qt::ISODate );
+                rec["wopt"] = QJsonValue::Null;
+                rec["relative_error"] = QJsonValue::Null;
+                prodArr.append( rec );
+            }
+            else
+            {
+                QJsonObject rec;
+                QDateTime dt = RiaQDateTimeTools::fromTime_t( t );
+                rec["time"] = dt.toString( Qt::ISODate );
+                rec["wopt"] = it->second.first;
+                rec["relative_error"] = it->second.second;
+                prodArr.append( rec );
+            }
+        }
+
+        wellObj["production"] = prodArr;
+        wellsArray.append( wellObj );
+    }
+
     QJsonObject rootObj;
     rootObj["project"] = app->project() ? app->project()->fileName() : QString();
-    rootObj["description"] = "Placeholder for Export Well Error Data. Replace with actual WOPT/WOPTH error points collection.";
-    rootObj["wells"] = QJsonArray();
+    rootObj["description"] = QString( "Exported WOPT/WOPTH derived production error data" );
+    rootObj["wells"] = wellsArray;
+    rootObj["time_steps"] = timeStepsArray;
 
     // Add current case info for later use
     rootObj["current_case_path"] = currentCasePath;
