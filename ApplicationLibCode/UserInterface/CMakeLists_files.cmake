@@ -26,6 +26,7 @@ set(SOURCE_GROUP_HEADER_FILES
     ${CMAKE_CURRENT_LIST_DIR}/RiuPvtPlotUpdater.h
     ${CMAKE_CURRENT_LIST_DIR}/RiuPvtPlotWidget.h
     ${CMAKE_CURRENT_LIST_DIR}/RiuPlotUpdater.h
+	${CMAKE_CURRENT_LIST_DIR}/ReservoirTypeDetector.h
     ${CMAKE_CURRENT_LIST_DIR}/RiuQwtLinearScaleEngine.h
     ${CMAKE_CURRENT_LIST_DIR}/RiuQwtScalePicker.h
     ${CMAKE_CURRENT_LIST_DIR}/RiuQwtCurvePointTracker.h
@@ -168,6 +169,7 @@ set(SOURCE_GROUP_SOURCE_FILES
     ${CMAKE_CURRENT_LIST_DIR}/RiuToolTipMenu.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RiuTreeViewEventFilter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RiuViewer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ReservoirTypeDetector.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RiuViewerCommands.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RiuCellAndNncPickEventHandler.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RiuPickItemInfo.cpp

@@ -73,6 +73,7 @@
 #include "RiuTreeViewEventFilter.h"
 #include "RiuViewer.h"
 #include "RifOpmHdf5Summary.h"
+#include "ReservoirTypeDetector.h"
 
 #include "cafAnimationToolBar.h"
 #include "cafCmdExecCommandManager.h"
@@ -2397,6 +2398,133 @@ void RiuMainWindow::slotExportWellErrorData()
     // Add current case info for later use
     rootObj["current_case_path"] = currentCasePath;
     rootObj["current_case_id"] = currentCaseId;
+
+    // ------------------------- Reservoir Type Detection -------------------------
+    // Use ReservoirTypeDetector to judge reservoir type for the active case and include result in JSON
+    QJsonObject reservoirTypeObj;
+    Rim3dView* activeViewForDetection = RiaApplication::instance()->activeReservoirView();
+    if ( activeViewForDetection )
+    {
+        RimCase* ownerCaseForDetection = activeViewForDetection->ownerCase();
+        RimEclipseCase* eclipseCaseForDetection = dynamic_cast<RimEclipseCase*>( ownerCaseForDetection );
+        if ( eclipseCaseForDetection && eclipseCaseForDetection->eclipseCaseData() )
+        {
+            ReservoirTypeJudger judger( eclipseCaseForDetection->eclipseCaseData(), eclipseCaseForDetection );
+            ReservoirMultiDimResult detectRes = judger.judgeFullDimension();
+
+            // Tags
+            QJsonArray tagArray;
+            for ( const QString& t : detectRes.getFullDimensionTags() ) tagArray.append( t );
+            reservoirTypeObj["tags"] = tagArray;
+
+            // Base model
+            QJsonObject baseObj;
+            baseObj["typeName"] = detectRes.baseModelResult.typeName;
+            baseObj["isMatched"] = detectRes.baseModelResult.isMatched;
+            baseObj["confidence"] = detectRes.baseModelResult.confidence;
+            baseObj["reason"] = detectRes.baseModelResult.judgeReason;
+            reservoirTypeObj["base_model"] = baseObj;
+
+            // Enhanced models (list)
+            QJsonArray enhancedArray;
+            for ( const auto& em : detectRes.enhancedModels )
+            {
+                if ( em == EnhancedSimulationModel::THERMAL ) enhancedArray.append( "Thermal" );
+                else if ( em == EnhancedSimulationModel::CHEMICAL ) enhancedArray.append( "Chemical" );
+                else enhancedArray.append( "None" );
+            }
+            reservoirTypeObj["enhanced_models"] = enhancedArray;
+
+            // Enhanced model details
+            QJsonObject enhancedDetailsObj;
+            for ( auto it = detectRes.enhancedModelResults.begin(); it != detectRes.enhancedModelResults.end(); ++it )
+            {
+                QString key;
+                if ( it.key() == EnhancedSimulationModel::THERMAL ) key = "THERMAL";
+                else if ( it.key() == EnhancedSimulationModel::CHEMICAL ) key = "CHEMICAL";
+                else key = "NONE";
+
+                QJsonObject info;
+                info["typeName"] = it.value().typeName;
+                info["isMatched"] = it.value().isMatched;
+                info["confidence"] = it.value().confidence;
+                info["reason"] = it.value().judgeReason;
+                enhancedDetailsObj[key] = info;
+            }
+            reservoirTypeObj["enhanced_details"] = enhancedDetailsObj;
+
+            // Sub-models
+            QJsonObject subModelsObj;
+            for ( auto it = detectRes.subModelResults.begin(); it != detectRes.subModelResults.end(); ++it )
+            {
+                // Use stored typeName as key to make JSON readable
+                QString key = it.value().typeName.isEmpty() ? QString::number( static_cast<int>( it.key() ) ) : it.value().typeName;
+                QJsonObject info;
+                info["isMatched"] = it.value().isMatched;
+                info["confidence"] = it.value().confidence;
+                info["reason"] = it.value().judgeReason;
+                subModelsObj[key] = info;
+            }
+            reservoirTypeObj["sub_models"] = subModelsObj;
+
+            // Primary sub-model
+            QJsonObject primarySubObj;
+            primarySubObj["typeName"] = detectRes.primarySubModelResult.typeName;
+            primarySubObj["isMatched"] = detectRes.primarySubModelResult.isMatched;
+            primarySubObj["confidence"] = detectRes.primarySubModelResult.confidence;
+            primarySubObj["reason"] = detectRes.primarySubModelResult.judgeReason;
+            reservoirTypeObj["primary_sub_model"] = primarySubObj;
+
+            // Geological dimensions (structural, lithology, special)
+            QJsonObject geologicalObj;
+
+            QJsonArray structuralArray;
+            for ( auto it = detectRes.structuralResults.begin(); it != detectRes.structuralResults.end(); ++it )
+            {
+                if ( it.value().isMatched )
+                {
+                    QJsonObject info;
+                    info["typeName"] = it.value().typeName;
+                    info["confidence"] = it.value().confidence;
+                    info["reason"] = it.value().judgeReason;
+                    structuralArray.append( info );
+                }
+            }
+            geologicalObj["structural"] = structuralArray;
+
+            QJsonArray lithoArray;
+            for ( auto it = detectRes.lithologyResults.begin(); it != detectRes.lithologyResults.end(); ++it )
+            {
+                if ( it.value().isMatched )
+                {
+                    QJsonObject info;
+                    info["typeName"] = it.value().typeName;
+                    info["confidence"] = it.value().confidence;
+                    info["reason"] = it.value().judgeReason;
+                    lithoArray.append( info );
+                }
+            }
+            geologicalObj["lithology"] = lithoArray;
+
+            QJsonArray specialArray;
+            for ( auto it = detectRes.specialResults.begin(); it != detectRes.specialResults.end(); ++it )
+            {
+                if ( it.value().isMatched )
+                {
+                    QJsonObject info;
+                    info["typeName"] = it.value().typeName;
+                    info["confidence"] = it.value().confidence;
+                    info["reason"] = it.value().judgeReason;
+                    specialArray.append( info );
+                }
+            }
+            geologicalObj["special_medium"] = specialArray;
+
+            reservoirTypeObj["geological"] = geologicalObj;
+        }
+    }
+
+    rootObj["reservoir_type"] = reservoirTypeObj;
 
     QJsonDocument doc( rootObj );
 
