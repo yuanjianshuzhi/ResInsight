@@ -74,6 +74,7 @@
 #include <openssl/ec.h>
 #include <openssl/applink.c> // Fix for OPENSSL_Uplink error on Windows
 #include <fstream>
+#include <filesystem>
 #include <vector>
 #include <mutex>
 
@@ -86,6 +87,19 @@ RIzAvFppgOOWCy5ZGCTFEnYisNEEno8bibfdJgIxWIKvjm/IIBlNrOgf4Q==
 static std::mutex g_keyMutex;
 
 void manageSegFailure( int signalCode );
+std::string stringNormalize( const std::string& s )
+{
+    std::string out;
+    out.reserve( s.size() );
+    for ( char c : s )
+    {
+        if ( std::isxdigit( static_cast<unsigned char>( c ) ) )
+        {
+            out.push_back( static_cast<char>( std::toupper( static_cast<unsigned char>( c ) ) ) );
+        }
+    }
+    return out;
+}
 
 RiaApplication* createApplication( int& argc, char* argv[] )
 {
@@ -411,12 +425,19 @@ err:
     return false;
 }
 
-bool verifyJsonFile( const std::string& filePath, const std::string& machineCode, bool& isValid )
+bool verifyJsonFile( const std::string& filePath, const std::string& machineCode, bool& isValid, std::string & strJson)
 {
     isValid = false;
     
-    std::ifstream ifs( filePath );
-    if ( !ifs.is_open() ) return false;
+    std::filesystem::path p = std::filesystem::u8path( filePath );
+    std::ifstream ifs( p );
+
+    //std::ifstream ifs( filePath );
+    if ( !ifs.is_open() )
+    {
+        strJson = "Failed to open key file: " + filePath;
+        return false;
+    }
 
     nlohmann::json j;
     try
@@ -425,11 +446,13 @@ bool verifyJsonFile( const std::string& filePath, const std::string& machineCode
     }
     catch ( ... )
     {
+        strJson = "Failed to parse JSON from key file: " + filePath;
         return false;
     }
 
     if ( !j.contains( "mac" ) || !j.contains( "overdue" ) || !j.contains( "function" ) || !j.contains( "signature" ) )
     {
+        strJson = "JSON key file missing required fields (mac, overdue, function, signature)";
         return false;
     }
 
@@ -438,12 +461,28 @@ bool verifyJsonFile( const std::string& filePath, const std::string& machineCode
     std::string coreStr   = core.dump();
     std::string signature = j["signature"].get<std::string>();
 
-    isValid = j["mac"].get<std::string>() == machineCode && verifyJsonString( coreStr, signature );
-    return true;
+    isValid = stringNormalize( j["mac"].get<std::string>() ) == stringNormalize(machineCode) &&
+              verifyJsonString( coreStr, signature );
+    strJson = j["mac"].get<std::string>();
+    //if (!(j["mac"].get<std::string>() == machineCode))
+    //{
+    //    QDialog errDlg;
+    //    errDlg.setWindowTitle( "License verification" );
+    //    errDlg.setModal( true );
+
+    //    QVBoxLayout* layout = new QVBoxLayout( &errDlg );
+
+    //    QLabel* errLabel = new QLabel( QStringLiteral( " Machine code: %1 does not match %2" )
+    //        .arg( QString::fromStdString(machineCode) ) 
+    //        .arg( QString::fromStdString( j["mac"].get<std::string>() ) ) );
+    //    errLabel->setWordWrap( true );
+    //    layout->addWidget( errLabel );
+    //}
+    return stringNormalize( j["mac"].get<std::string>() ) == stringNormalize(machineCode);
 }
 
 // Helper stub for public key validation. The real verification algorithm will be provided later.
-static bool validatePublicKey( const QString& keyFilePath, const QString& machineCode )
+static bool validatePublicKey( const QString& keyFilePath, const QString& machineCode, bool& isMCValid, std::string& strJson )
 {
     // Placeholder implementation:
     // - Open the file and perform any parsing and cryptographic checks here when algorithm is available.
@@ -452,15 +491,15 @@ static bool validatePublicKey( const QString& keyFilePath, const QString& machin
     bool isValid = false;
     Q_UNUSED( keyFilePath );
     Q_UNUSED( machineCode );
-    bRet = verifyJsonFile( keyFilePath.toStdString(), machineCode.toStdString(), isValid );
-
+    bRet      = verifyJsonFile( keyFilePath.toStdString(), machineCode.toStdString(), isValid, strJson );
+    isMCValid = bRet;
     return isValid;
 }
 
-bool verifyMachineCode(const QString& keyFilePath, const QString& machineCode)
-{
-    return validatePublicKey(keyFilePath, machineCode);
-}
+//bool verifyMachineCode(const QString& keyFilePath, const QString& machineCode)
+//{
+//    return validatePublicKey(keyFilePath, machineCode);
+//}
 
 // Shows a blocking dialog with machine code and a password QLineEdit that only accepts alphanumeric.
 // Behavior changed to the following:
@@ -475,6 +514,7 @@ static bool showMachineCodeAndRequirePassword()
 
     // Search for key file in application directory and current working directory
     QString appDirPath = QCoreApplication::applicationDirPath();
+    //appDirPath         = "";
     QString cwdPath = QDir::currentPath();
 
     QStringList candidatePaths;
@@ -534,7 +574,9 @@ static bool showMachineCodeAndRequirePassword()
     }
 
     // Key file found -> attempt validation. The real algorithm will be implemented later.
-    bool valid = validatePublicKey(foundKeyPath, machineCode);
+    bool mcVal = false;
+    std::string strJson = "00";
+    bool        valid = validatePublicKey( foundKeyPath, machineCode, mcVal, strJson );
     if ( valid )
     {
         // Key validated - continue startup
@@ -547,9 +589,26 @@ static bool showMachineCodeAndRequirePassword()
     errDlg.setModal( true );
 
     QVBoxLayout* layout = new QVBoxLayout( &errDlg );
-    QLabel* errLabel = new QLabel( QStringLiteral( "The provided public key appears to be invalid for this machine. Please contact the licensor or request a trial. Machine code: %1" ).arg( machineCode ) );
-    errLabel->setWordWrap( true );
-    layout->addWidget( errLabel );
+    
+    if (!mcVal)
+    {
+        QLabel* errLabel =
+            new QLabel( QStringLiteral( " Machine code: %1 does not match \n %2" ).arg( machineCode ).arg( QString::fromStdString(strJson) ) );
+        errLabel->setWordWrap( true );
+        layout->addWidget( errLabel );
+    }
+    else
+    {
+        QLabel* errLabel =
+            new QLabel( QStringLiteral( "The provided public key appears to be invalid for this machine. Please "
+                                        "contact the licensor or request a trial. Machine code: %1" )
+                            .arg( machineCode ) );
+        errLabel->setWordWrap( true );
+        layout->addWidget( errLabel );
+    }
+    //QLabel* errLabel = new QLabel( QStringLiteral( "The provided public key appears to be invalid for this machine. Please contact the licensor or request a trial. Machine code: %1" ).arg( machineCode ) );
+    
+    //layout->addWidget( errLabel );
 
     // Machine code field with copy button for convenience
     QLineEdit* codeEditErr = new QLineEdit( machineCode );
@@ -562,6 +621,7 @@ static bool showMachineCodeAndRequirePassword()
     QPushButton* copyBtnErr = new QPushButton( QObject::tr("Copy") );
     codeLayoutErr->addWidget( copyBtnErr );
     layout->addLayout( codeLayoutErr );
+
 
     QObject::connect( copyBtnErr, &QPushButton::clicked, [machineCode]() {
         QClipboard* cb = QApplication::clipboard();

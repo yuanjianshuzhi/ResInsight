@@ -45,6 +45,7 @@
 #include "RigFlowDiagSolverInterface.h"
 #include "RigMainGrid.h"
 #include "RigReservoirGridTools.h"
+#include "RigActiveCellInfo.h"
 
 #include "Formations/RimFormationNames.h"
 #include "Formations/RimFormationTools.h"
@@ -52,6 +53,8 @@
 #include "RimEclipseCaseEnsemble.h"
 #include "RimEclipseCellColors.h"
 #include "RimEclipseInputProperty.h"
+#include "RigEclipseResultAddress.h"
+
 #include "RimEclipseInputPropertyCollection.h"
 #include "RimEclipseView.h"
 #include "RimFlowDiagSolution.h"
@@ -72,8 +75,13 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <thread>
+#include <chrono>
 #include <fstream>
 #include <string>
+#include <iomanip>      // std::setprecision, std::fixed
+#include <cmath>        // std::isfinite()
+#include "RiaDefines.h"
 
 CAF_PDM_SOURCE_INIT( RimEclipseResultCase, "EclipseCase" );
 //--------------------------------------------------------------------------------------------------
@@ -324,6 +332,121 @@ bool RimEclipseResultCase::importGridAndResultMetaData( bool showTimeStepFilter 
         // This is required to make the generated LGR for radial grids work when loading a project file
         RigReservoirGridTools::refreshEclipseCaseDataAndViews( this );
     }
+
+    // --- SOIL ARITHMETIC MEAN EXPORT (minimal change) ---
+    // Only do this for EGRID import, not for mock model
+    // --- SOIL ARITHMETIC MEAN EXPORT (refined method aligned with ReservoirTypeDetector) ---
+    if ( mainGrid() && eclipseCaseData() )
+    {
+        const RigMainGrid* grid        = mainGrid();
+        size_t             nx          = grid->cellCountI();
+        size_t             ny          = grid->cellCountJ();
+        size_t             nz          = grid->cellCountK();
+        size_t             timeStepIdx = 85; // 86th time step, 0-based
+
+        auto* cellResults = eclipseCaseData()->results( RiaDefines::PorosityModelType::MATRIX_MODEL );
+        if ( !cellResults ) return false;
+
+        const RigActiveCellInfo* activeCellInfo = cellResults->activeCellInfo();
+        if ( !activeCellInfo ) return false;
+
+        // ---- Method 1: Using lambda for result address lookup (ReservoirTypeDetector style) ----
+        auto findResultAddr = [&cellResults]( const QString& name ) -> RigEclipseResultAddress
+        {
+            auto addrs = cellResults->existingResults();
+            for ( auto it = addrs.rbegin(); it != addrs.rend(); ++it )
+            {
+                if ( it->resultName().compare( name, Qt::CaseInsensitive ) == 0 ) return *it;
+            }
+            return RigEclipseResultAddress();
+        };
+
+        RigEclipseResultAddress soilAddr = findResultAddr( "SOIL" );
+
+        // Validate the address
+        if ( !soilAddr.isValid() )
+        {
+            return false; // SOIL result not found
+        }
+
+        // Ensure the result is loaded for the requested time step
+        if ( !cellResults->ensureKnownResultLoaded( soilAddr ) )
+        {
+            return false; // Failed to load SOIL result
+        }
+
+        // Check time step validity
+        if ( cellResults->timeStepCount( soilAddr ) <= timeStepIdx )
+        {
+            return false; // Time step index out of range
+        }
+
+        const std::vector<double>& soilVals = cellResults->cellScalarResults( soilAddr, timeStepIdx );
+        if ( soilVals.empty() )
+        {
+            return false; // No SOIL data available
+        }
+
+        // ---- Export SOIL arithmetic mean per [i,j] column ----
+        QFileInfo     fi( gridFileName() );
+        QString       outPath = fi.absolutePath() + "/soil_arithmetic_mean.txt";
+        std::ofstream fout( outPath.toStdString() );
+
+        if ( !fout.is_open() )
+        {
+            return false; // File open failed
+        }
+
+        // Write header
+        fout << "# SOIL Arithmetic Mean Export\n";
+        fout << "# Grid: " << fi.fileName().toStdString() << "\n";
+        fout << "# Time Step: " << timeStepIdx << "\n";
+        fout << "# Format: [i,j] = mean_soil_value\n\n";
+        size_t validColumnCount = 0;
+        size_t finiteCount      = 0;
+        size_t finiteCount2      = 0;
+
+        // Calculate mean SOIL for each [i,j] column (K-direction)
+        for ( size_t i = 0; i < nx ; ++i )
+        {
+            for ( size_t j = 0; j < ny ; ++j )
+            {
+                double sum   = 0.0;
+                size_t count = 0;
+
+                for ( size_t k = 0; k < nz ; ++k )
+                {
+                    // Use 0-based indexing directly (ResInsight internal convention)
+                    size_t cellIdx = grid->cellIndexFromIJK( i, j, k );
+                    if ( cellIdx < soilVals.size() )
+                    {
+                        double value = soilVals[cellIdx];
+                        validColumnCount++;
+
+                        // Filter invalid values (NaN, Inf, etc.)
+                        if ( std::isfinite( value ) )
+                        {
+                            sum += value;
+                            ++count;
+                            finiteCount2++;
+                        }
+                    }
+                }
+
+                // Output valid results
+                if ( count > 0 )
+                {
+                    double meanSoil = sum / static_cast<double>( count );
+                    fout << std::fixed << std::setprecision( 6 );
+                    fout << "[" << ( i + 1 ) << "," << ( j + 1 ) << "] = " << meanSoil << " (n=" << count << ")\n";
+                }
+            }
+        }
+        fout << "# active cells count: " + validColumnCount;
+        std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+        fout.close();
+    }
+    // --- END SOIL EXPORT ---
 
     return true;
 }
